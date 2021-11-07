@@ -23,3 +23,4 @@ override.tf.json
 # CLI configuration files - игнорируем в корне проекта
 .terraformrc
 terraform.rc
+New line
