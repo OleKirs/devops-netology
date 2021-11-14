@@ -21,11 +21,11 @@ Comment: Update CHANGELOG.md
 
 *Тэг v0.12.23*
 
-#Команда: 
+*Команда:*
 ```bash
 olekirs@Deb10-Lab:~/terraform$ git show 85024d3 --oneline -q
 ```
-#Результат:
+*Результат:*
 ```bash
 85024d310 (tag: v0.12.23) v0.12.23
 ```
@@ -33,11 +33,11 @@ olekirs@Deb10-Lab:~/terraform$ git show 85024d3 --oneline -q
 
 *У коммита 2 родителя. Хэши родителей: 56cd7859e 9ea88f22f*
 
-#Команда: 
+*Команда:*
 ```bash
 olekirs@Deb10-Lab:~/terraform$ git show --source b8d720 --pretty=short 
 ```
-#Результат:
+*Результат:*
 ```bash
 commit b8d720f8340221f2146e4e4870bf2ee0bc48f2d5 b8d720
 Merge: 56cd7859e 9ea88f22f
@@ -46,11 +46,11 @@ Author: Chris Griggs <cgriggs@hashicorp.com>
     Merge pull request #23916 from hashicorp/cgriggs01-stable
 ```
 ### 4. Перечислите хеши и комментарии всех коммитов которые были сделаны между тегами v0.12.23 и v0.12.24.
-*Команда (все хеши начиная, но не включая с v0.12.23 до до родителя коммита v0.12.24): *
+*Команда \(все хеши начиная, но не включая с v0.12.23 до до родителя коммита v0.12.24\):*
 ```bash
 olekirs@Deb10-Lab:~/terraform$ git log v0.12.23..v0.12.24^ --pretty=oneline 
 ```
-#Результат:
+*Результат:*
 ```bash
 b14b74c4939dcab573326f4e3ee2a62e23e12f89 [Website] vmc provider links
 3f235065b9347a758efadc92295b540ee0a5e26e Update CHANGELOG.md
