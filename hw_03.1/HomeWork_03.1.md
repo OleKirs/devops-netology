@@ -81,7 +81,7 @@ PS C:\HashiCorp\Vagrant\etc>
 ```
 ## 5. Ознакомьтесь с графическим интерфейсом VirtualBox, посмотрите как выглядит виртуальная машина, которую создал для вас Vagrant, какие аппаратные ресурсы ей выделены. Какие ресурсы выделены по-умолчанию?
 	CPU:2 cpu, RAM:1024mb, Video:4mb, HDD:64gb
-![Параметры ВМ по-умолчанию](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/2.png "Параметры ВМ по-умолчанию" )
+![Параметры ВМ по-умолчанию](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/3.png "Параметры ВМ по-умолчанию" )
 
 
 ## 6. Ознакомьтесь с возможностями конфигурации VirtualBox через Vagrantfile: [документация](https://www.vagrantup.com/docs/providers/virtualbox/configuration.html). Как добавить оперативной памяти или ресурсов процессора виртуальной машине?
