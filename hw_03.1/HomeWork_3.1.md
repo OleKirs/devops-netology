@@ -1,4 +1,4 @@
-# Домашнее задание к занятию "3.1. Работа в терминале, лекция 1"
+﻿# Домашнее задание к занятию "3.1. Работа в терминале, лекция 1"
 
 ## 1. Установите средство виртуализации [Oracle VirtualBox](https://www.virtualbox.org/).
  *Установил*
@@ -97,8 +97,21 @@ PS C:\HashiCorp\Vagrant\etc>
 
 ## 8. Ознакомиться с разделами `man bash`, почитать о настройках самого bash:
  **какой переменной можно задать длину журнала `history`, и на какой строчке manual это описывается?**
-    1. HISTFILESIZE - максимальное число строк в файле истории для сохранения, (line 1155)
-    2. HISTSIZE - число команд для сохранения (line 1178)
+
+8.1. **(line 1155)**
+```bash
+       HISTFILESIZE
+              The maximum number of lines contained in the history file.  When this variable is assigned a value, the history file is truncated, if necessary, to contain no more than that number of lines by removing the  old‐
+              est entries.  The history file is also truncated to this size after writing it when a shell exits.  If the value is 0, the history file is truncated to zero size.  Non-numeric values and numeric values less than
+              zero inhibit truncation.  The shell sets the default value to the value of HISTSIZE after reading any startup files.
+```
+
+8.2. **(line 1178)**
+```bash
+       HISTSIZE
+              The  number  of commands to remember in the command history (see HISTORY below).  If the value is 0, commands are not saved in the history list.  Numeric values less than zero result in every command being saved
+              on the history list (there is no limit).  The shell sets the default value to 500 after reading any startup files.
+```
 	
  **что делает директива `ignoreboth` в bash?**
  ***ignoreboth*** -> *"не сохранять команды начинающиеся с пробела и не сохранять, если такая команда уже имеется в истории"*
