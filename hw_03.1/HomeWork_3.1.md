@@ -98,7 +98,7 @@ PS C:\HashiCorp\Vagrant\etc>
 ## 8. Ознакомиться с разделами `man bash`, почитать о настройках самого bash:
  **какой переменной можно задать длину журнала `history`, и на какой строчке manual это описывается?**
 
-8.1. **(line 1155)**
+**(line 596)**
 ```bash
        HISTFILESIZE
               The maximum number of lines contained in the history file.  When this variable is assigned a value, the history file is truncated, if necessary, to contain no more than that number of lines by removing the  old‐
@@ -106,7 +106,6 @@ PS C:\HashiCorp\Vagrant\etc>
               zero inhibit truncation.  The shell sets the default value to the value of HISTSIZE after reading any startup files.
 ```
 
-8.2. **(line 1178)**
 ```bash
        HISTSIZE
               The  number  of commands to remember in the command history (see HISTORY below).  If the value is 0, commands are not saved in the history list.  Numeric values less than zero result in every command being saved
