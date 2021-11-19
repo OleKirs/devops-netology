@@ -5,11 +5,11 @@
 ## 2. Установите средство автоматизации [Hashicorp Vagrant](https://www.vagrantup.com/).
  *Установил*
  
-![Установлено VirtualBox + Vagrant](https://raw.githubusercontent.com/OleKirs/devops-netology/main/hw_03.1/1.jpg)
+![Установлено VirtualBox + Vagrant](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/1.png)
 ## 3. В вашем основном окружении подготовьте удобный для дальнейшей работы терминал. Можно предложить:
  *Установлено -* ***Putty.exe***
 
-![Установлено - Putty](https://raw.githubusercontent.com/OleKirs/devops-netology/main/hw_03.1/2.jpg)
+![Установлено - Putty](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/2.png)
 
 ## 4. С помощью базового файла конфигурации запустите Ubuntu 20.04 в VirtualBox посредством Vagrant:
  *Выполнено*
