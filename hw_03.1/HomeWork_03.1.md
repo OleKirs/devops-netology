@@ -5,11 +5,11 @@
 ## 2. Установите средство автоматизации [Hashicorp Vagrant](https://www.vagrantup.com/).
  *Установил*
  
-![Установлено VirtualBox + Vagrant](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/1.png "Установлено VirtualBox + Vagrant")
-## 3. В вашем основном окружении подготовьте удобный для дальнейшей работы терминал. Можно предложить:
+![Установлено VirtualBox + Vagrant](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/1.png "Установлено: VirtualBox + Vagrant")
+## 3. В вашем основном окружении подготовьте удобный для дальнейшей работы терминал.
  *Установлено -* ***Putty.exe***
 
-![Установлено - Putty](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/2.png "Установлено - Putty")
+![Установлено - Putty](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/2.png "Установлено: Putty")
 
 ## 4. С помощью базового файла конфигурации запустите Ubuntu 20.04 в VirtualBox посредством Vagrant:
  *Выполнено*
@@ -81,7 +81,7 @@ PS C:\HashiCorp\Vagrant\etc>
 ```
 ## 5. Ознакомьтесь с графическим интерфейсом VirtualBox, посмотрите как выглядит виртуальная машина, которую создал для вас Vagrant, какие аппаратные ресурсы ей выделены. Какие ресурсы выделены по-умолчанию?
 	CPU:2 cpu, RAM:1024mb, Video:4mb, HDD:64gb
-![Параметры ВМ по-умолчанию](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/2.png "Параметры ВМ по-умолчанию" )
+![Параметры ВМ по-умолчанию](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/3.png "Параметры ВМ по-умолчанию" )
 
 
 ## 6. Ознакомьтесь с возможностями конфигурации VirtualBox через Vagrantfile: [документация](https://www.vagrantup.com/docs/providers/virtualbox/configuration.html). Как добавить оперативной памяти или ресурсов процессора виртуальной машине?
@@ -96,7 +96,7 @@ PS C:\HashiCorp\Vagrant\etc>
  *Выполнено*
 
 ## 8. Ознакомиться с разделами `man bash`, почитать о настройках самого bash:
- **какой переменной можно задать длину журнала `history`, и на какой строчке manual это описывается?**
+###какой переменной можно задать длину журнала `history`, и на какой строчке manual это описывается?
 
 **(line 596)**
 ```bash
@@ -112,7 +112,7 @@ PS C:\HashiCorp\Vagrant\etc>
               on the history list (there is no limit).  The shell sets the default value to 500 after reading any startup files.
 ```
 	
- **что делает директива \`ignoreboth\` в bash\?**
+###Что делает директива \`ignoreboth\` в bash\?
 
 *A value of* ***ignoreboth*** *is shorthand for ignorespace and ignoredups.*
 
@@ -129,7 +129,7 @@ HISTCONTROL
  Compound Commands
        A compound command is one of the following.  In most cases a list in a command's description may be separated from the rest of the command by one or more newlines, and may be followed by a newline in place of  a  semi‐
        colon.
-
+...
        { list; }
               list is simply executed in the current shell environment.  list must be terminated with a newline or semicolon.  This is known as a group command.  The return status is the exit status of list.  Note that unlike
               the metacharacters ( and ), { and } are reserved words and must occur where a reserved word is permitted to be recognized.  Since they do not cause a word break, they must be separated from list by whitespace or
@@ -139,7 +139,7 @@ HISTCONTROL
 ## 10. Основываясь на предыдущем вопросе, как создать однократным вызовом `touch` 100000 файлов? А получилось ли создать 300000? Если нет, то почему?
 
  *touch {000001..100000} - создаст 100 000 фалов в рабочем (текущем) каталоге*
- *touch {000001..100000} - не сработает, т.к. у команды будет слишком дилинный список аргументов, максимальное число ограничено переменной* ***"ARG_MAX"***
+ *touch {000001..300000} - не сработает, т.к. у команды будет слишком дилинный список аргументов, максимальное число ограничено переменной* ***"ARG_MAX"***
 ```bash
 vagrant@vagrant:~/exp$ touch {1..147055} -c
 vagrant@vagrant:~/exp$ touch {1..147056} -c
