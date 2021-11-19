@@ -5,11 +5,11 @@
 ## 2. Установите средство автоматизации [Hashicorp Vagrant](https://www.vagrantup.com/).
  *Установил*
  
-![Установлено VirtualBox + Vagrant](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/1.png)
+![Установлено VirtualBox + Vagrant](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/1.png "Установлено VirtualBox + Vagrant")
 ## 3. В вашем основном окружении подготовьте удобный для дальнейшей работы терминал. Можно предложить:
  *Установлено -* ***Putty.exe***
 
-![Установлено - Putty](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/2.png)
+![Установлено - Putty](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/2.png "Установлено - Putty")
 
 ## 4. С помощью базового файла конфигурации запустите Ubuntu 20.04 в VirtualBox посредством Vagrant:
  *Выполнено*
@@ -80,7 +80,9 @@ the timeout ("config.vm.boot_timeout") value.
 PS C:\HashiCorp\Vagrant\etc>
 ```
 ## 5. Ознакомьтесь с графическим интерфейсом VirtualBox, посмотрите как выглядит виртуальная машина, которую создал для вас Vagrant, какие аппаратные ресурсы ей выделены. Какие ресурсы выделены по-умолчанию?
-	CPU:1 cpu, RAM:1024mb, Video:8mb, HDD:64gb
+	CPU:2 cpu, RAM:1024mb, Video:4mb, HDD:64gb
+![Параметры ВМ по-умолчанию](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/2.png "Параметры ВМ по-умолчанию" )
+
 
 ## 6. Ознакомьтесь с возможностями конфигурации VirtualBox через Vagrantfile: [документация](https://www.vagrantup.com/docs/providers/virtualbox/configuration.html). Как добавить оперативной памяти или ресурсов процессора виртуальной машине?
 ```bash
