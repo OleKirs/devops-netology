@@ -81,7 +81,7 @@ PS C:\HashiCorp\Vagrant\etc>
 ```
 ## 5. Ознакомьтесь с графическим интерфейсом VirtualBox, посмотрите как выглядит виртуальная машина, которую создал для вас Vagrant, какие аппаратные ресурсы ей выделены. Какие ресурсы выделены по-умолчанию?
 	CPU:2 cpu, RAM:1024mb, Video:4mb, HDD:64gb
-![Параметры ВМ по-умолчанию](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/3.png "Параметры ВМ по-умолчанию" )
+![Параметры ВМ по-умолчанию](https://github.com/OleKirs/devops-netology/raw/main/hw_03.1/2.png "Параметры ВМ по-умолчанию" )
 
 
 ## 6. Ознакомьтесь с возможностями конфигурации VirtualBox через Vagrantfile: [документация](https://www.vagrantup.com/docs/providers/virtualbox/configuration.html). Как добавить оперативной памяти или ресурсов процессора виртуальной машине?
@@ -105,26 +105,52 @@ PS C:\HashiCorp\Vagrant\etc>
               est entries.  The history file is also truncated to this size after writing it when a shell exits.  If the value is 0, the history file is truncated to zero size.  Non-numeric values and numeric values less than
               zero inhibit truncation.  The shell sets the default value to the value of HISTSIZE after reading any startup files.
 ```
-
+**(line 605)**
 ```bash
        HISTSIZE
               The  number  of commands to remember in the command history (see HISTORY below).  If the value is 0, commands are not saved in the history list.  Numeric values less than zero result in every command being saved
               on the history list (there is no limit).  The shell sets the default value to 500 after reading any startup files.
 ```
 	
- **что делает директива `ignoreboth` в bash?**
- ***ignoreboth*** -> *"не сохранять команды начинающиеся с пробела и не сохранять, если такая команда уже имеется в истории"*
+ **что делает директива \`ignoreboth\` в bash\?**
 
+*A value of* ***ignoreboth*** *is shorthand for ignorespace and ignoredups.*
+
+ ***(line 585)***
+```bash
+HISTCONTROL
+              A colon-separated list of values controlling how commands are saved on the history list.  If the list of values includes ignorespace, lines which begin with a space character are not saved in the  history  list.
+              A  value of ignoredups causes lines matching the previous history entry to not be saved.  A value of ignoreboth is shorthand for ignorespace and ignoredups.
+```
 ## 9. В каких сценариях использования применимы скобки `{}` и на какой строчке `man bash` это описано?
- ***{}*** *- зарезервированные слова, список, в т.ч. список команд команд в отличии от "(...)" исполнятся в текущем инстансе, используется в различных условных циклах, условных операторах, или ограничивает тело функции, В командах выполняет подстановку элементов из списка , если упрощенно то  цикличное выполнение команд с подстановкой например mkdir ./DIR_{A..Z} - создаст каталоги сименами DIR_A, DIR_B и т.д. до DIR_Z *
- **(line 343)**
+
+**(line 199)**
+```bash
+ Compound Commands
+       A compound command is one of the following.  In most cases a list in a command's description may be separated from the rest of the command by one or more newlines, and may be followed by a newline in place of  a  semi‐
+       colon.
+
+       { list; }
+              list is simply executed in the current shell environment.  list must be terminated with a newline or semicolon.  This is known as a group command.  The return status is the exit status of list.  Note that unlike
+              the metacharacters ( and ), { and } are reserved words and must occur where a reserved word is permitted to be recognized.  Since they do not cause a word break, they must be separated from list by whitespace or
+              another shell metacharacter.
+```
 
 ## 10. Основываясь на предыдущем вопросе, как создать однократным вызовом `touch` 100000 файлов? А получилось ли создать 300000? Если нет, то почему?
- *touch {000001..100000}.txt - создаст в текущей директории соответсвющее число фалов*
- *300000 - создать не удасться, это слишком дилинный список аргументов, максимальное число получил экспериментально - 110188*
 
-## 11. В man bash поищите по `/\[\[`. Что делает конструкция `[[ -d /tmp ]]`
- *проверяет условие -d /tmp и возвращает ее статус (0 или 1), наличие директории /tmp*
+ *touch {000001..100000} - создаст 100 000 фалов в рабочем (текущем) каталоге*
+ *touch {000001..100000} - не сработает, т.к. у команды будет слишком дилинный список аргументов, максимальное число ограничено переменной* ***"ARG_MAX"***
+```bash
+vagrant@vagrant:~/exp$ touch {1..147055} -c
+vagrant@vagrant:~/exp$ touch {1..147056} -c
+-bash: /usr/bin/touch: Argument list too long
+vagrant@vagrant:~/exp$ getconf ARG_MAX
+2097152
+```
+Ошибка "Argument list too long" в Debian: ![Error: Argument list too long](https://wiki.debian.org/CommonErrorMessages/ArgumentListTooLong)
+
+## 11. В man bash поищите по `/[ ]`. Что делает конструкция `[[ -d /tmp ]]`
+ *проверяет условие* **-d /tmp** (наличие каталога /tmp) *и возвращает ее статус (0 (false) или 1 (true)).*
 
 ## 12. Основываясь на знаниях о просмотре текущих (например, PATH) и установке новых переменных; командах, которые мы рассматривали, добейтесь в выводе type -a bash в виртуальной машине наличия первым пунктом в списке:
 ```bash
@@ -142,7 +168,26 @@ bash is /bin/bash
 **at** *- команда запускается в указанное время \(в параметре\)*
 **batch** *- запускается когда уровень загрузки системы снизится ниже 1.5.*
 
-## 14. Завершите работу виртуальной машины чтобы не расходовать ресурсы компьютера и/или батарею ноутбука.
-```PowerShell
-PS> vagrant suspend
+```bash
+AT(1)                                                                                                General Commands Manual                                                                                                AT(1)
+
+NAME
+       at, batch, atq, atrm - queue, examine, or delete jobs for later execution
+
+...
+DESCRIPTION
+       at and batch read commands from standard input or a specified file which are to be executed at a later time, using /bin/sh.
+
+       at      executes commands at a specified time.
+
+...
+       batch   executes commands when system load levels permit; in other words, when the load average drops below 1.5, or the value specified in the invocation of atd.
+...
 ```
+
+## 14. Завершите работу виртуальной машины чтобы не расходовать ресурсы компьютера и/или батарею ноутбука.
+
+```powershell
+PS C:\Users\Administrator> vagrant suspend
+```
+
