@@ -106,7 +106,9 @@ openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
 > NAME 
 >
 > uname - get name and information about current kernel
+>
 > ...
+>
 > NOTES
 >
 > This is a system call, and the operating system presumably knows its name, release, and version.  ...
