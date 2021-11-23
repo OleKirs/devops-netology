@@ -100,10 +100,19 @@ openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
 *Какой системный вызов использует `uname -a`?* ***системный вызов `uname()`***
 
 *Приведите цитату из `man`..:*
-```bash
-     Part of the utsname information is also accessible  via  /proc/sys/ker‐
-       nel/{ostype, hostname, osrelease, version, domainname}.
-```
+
+> UNAME (2)
+> NAME 
+> uname - get name and information about current kernel
+> ...
+> NOTES
+> This is a system call, and the operating system presumably knows its name, release, and version.  ...
+>...
+> The length of the fields in the struct varies.  Some operating systems or libraries use a hardcoded 9 or 33 or 65 or 257.  Other systems use SYS_NMLN or _SYS_NMLN or UTSLEN or _UTSNAME_LENGTH. Clearly, it is a bad idea to use any of these constants; just use sizeof(...).  Often 257 is chosen in order to have room for an internet hostname.
+>
+> ***Part of the utsname information is also accessible via `/proc/sys/kernel/{ostype, hostname, osrelease, version, domainname}.`***
+>
+
 ## 7. Чем отличается последовательность команд через `;` и через `&&` в bash? Например:
     ```bash
     root@netology1:~# test -d /tmp/some_dir; echo Hi
