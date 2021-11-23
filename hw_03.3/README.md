@@ -96,7 +96,9 @@ openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
     581    dbus-daemon        18   0 /var/lib/snapd/dbus-1/system-services/
 ```
 ## 6. Какой системный вызов использует `uname -a`? Приведите цитату из man по этому системному вызову, где описывается альтернативное местоположение в `/proc`, где можно узнать версию ядра и релиз ОС.
+
 *Какой системный вызов использует `uname -a`?* ***системный вызов `uname()`***
+
 *Приведите цитату из `man`..:*
 ```bash
      Part of the utsname information is also accessible  via  /proc/sys/ker‐
