@@ -14,6 +14,7 @@ chdir("/tmp")
     /bin/bash: ELF 64-bit LSB shared object, x86-64
     ```
 ## Используя `strace` выясните, где находится база данных `file` на основании которой она делает свои догадки.
+### *Искомая база - `/usr/share/misc/magic.mgc`*
 Из описания команды  `file` известно, что она для хранения типов использует базу `magic.mgc`. Для получения её местонахождения найдём упоминания `magig.mgc` в выводе `strace`:
 ```bash
 root@vagrant:~# strace file /dev/sda 2>&1 | grep magic.mgc
@@ -21,50 +22,50 @@ stat("/root/.magic.mgc", 0x7ffc6ffd9760) = -1 ENOENT (No such file or directory)
 openat(AT_FDCWD, "/etc/magic.mgc", O_RDONLY) = -1 ENOENT (No such file or directory)
 openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
 ```
+
 Есть попытки чтения из домашней директории файла `/root/.magic.mgc` и из `/etc/magic.mgc`  но там такого файла нет : 
-`stat(`***"/root/.magic.mgc"***`, 0x7ffc6ffd9760) = -1 ENOENT` ***(No such file or directory)***
-`openat(AT_FDCWD,` ***"/etc/magic.mgc"***`, O_RDONLY) = -1 ENOENT` ***(No such file or directory)***
+    `stat(`***"/root/.magic.mgc"***`, 0x7ffc6ffd9760) = -1 ENOENT` ***(No such file or directory)***
+    `openat(AT_FDCWD,` ***"/etc/magic.mgc"***`, O_RDONLY) = -1 ENOENT` ***(No such file or directory)***
 
-Также читается файл `/etc/magic` и база `/usr/share/misc/magic.mgc`
-`openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3`
-
-### *Искомая база - `/usr/share/misc/magic.mgc`*
+Также читается файл `/etc/magic` и база `/usr/share/misc/magic.mgc`:
+    `openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3`
 
 ## 3. Предположим, приложение пишет лог в текстовый файл. Этот файл оказался удален (deleted в lsof), однако возможности сигналом сказать приложению переоткрыть файлы или просто перезапустить приложение – нет. Так как приложение продолжает писать в удаленный файл, место на диске постепенно заканчивается. Основываясь на знаниях о перенаправлении потоков предложите способ обнуления открытого удаленного файла (чтобы освободить место на файловой системе).
-Как вариант, перенаправить вывод из `/dev/null` на файловый дескриптор удалённого файла:
+Как вариант, можно перенаправить вывод из `/dev/null` на файловый дескриптор удалённого файла:
 `cat /dev/null >/proc/<#PID>/fd/<#FD>`
 ***Источники:***
-[**Восстановление открытых файлов но удаленных c файловой системы linux**](https://habr.com/ru/post/208104/)
-[**Как обнулить файл, открытый другим процессом**](https://www.opennet.ru/openforum/vsluhforumID1/84543.html?n=met3x)
+- [**Восстановление открытых файлов но удаленных c файловой системы linux**](https://habr.com/ru/post/208104/)
+- [**Как обнулить файл, открытый другим процессом**](https://www.opennet.ru/openforum/vsluhforumID1/84543.html?n=met3x)
+
 ***Основываясь на этих материалах выполнено:***
-3.1. Создадим фоновую задачу `ping 127.0.0.1`, пишущую результат из `stdout` в файл `log1` и запомним её PID (здесь PID=2146):
+  3.1. Создадим фоновую задачу `ping 127.0.0.1`, пишущую результат из `stdout` в файл `log1` и запомним её PID (здесь PID=2146):
 ```bash
-root@vagrant:~# ping 127.0.0.1 > log1 &
-[1] 2146
+    root@vagrant:~# ping 127.0.0.1 > log1 &
+    [1] 2146
 ```
-3.2. Убедимся, что файл лога создан, а затем удалим его и обнаружим дескриптор удалённого файла (#FD = 1) командой `lsof` с PID фоновой задачи, отфильтровав вывод по шаблону `deleted`:
+  3.2. Убедимся, что файл лога создан, а затем удалим его и обнаружим дескриптор удалённого файла (#FD = 1) командой `lsof` с PID фоновой задачи, отфильтровав вывод по шаблону `deleted`:
 ```bash
-root@vagrant:~# ll | grep log
--rw-r--r--  1 root root   2186 Nov 23 18:30 log1
-root@vagrant:~# rm log1
-root@vagrant:~# lsof -p 2146 | grep deleted
-ping    2146 root    1w   REG  253,0     4158 3538960 /root/log1 (deleted)
+    root@vagrant:~# ll | grep log
+    -rw-r--r--  1 root root   2186 Nov 23 18:30 log1
+    root@vagrant:~# rm log1
+    root@vagrant:~# lsof -p 2146 | grep deleted
+    ping    2146 root    1w   REG  253,0     4158 3538960 /root/log1 (deleted)
 ```
 3.3. Перед сбросом лога фоновой задачи для подтверждения работы команды сброса восстановим вывод лога но уже в другой файл (`log2`) и посчитаем общее количество строк в файле (получилось 105 строк), а затем удалим этот файл для восстановления исходного сосотояния:
 ```bash
-root@vagrant:~# cp /proc/2146/fd/1 /root/log2
-root@vagrant:~# cat /root/log2 | wc -l
-105
-root@vagrant:~# rm log2
+    root@vagrant:~# cp /proc/2146/fd/1 /root/log2
+    root@vagrant:~# cat /root/log2 | wc -l
+    105
+    root@vagrant:~# rm log2
 ```
 3.4. Обнулим лог командой `cat /dev/null >/proc/2146/fd/1`, перенаправим вывод в файл `log3` и посчитаем в нем количество строк (получилось 5 строк), и остановим фоновую задачу.
 ```bash
-root@vagrant:~# cat /dev/null >/proc/2146/fd/1
-root@vagrant:~# cp /proc/2146/fd/1 /root/log3
-root@vagrant:~# cat /root/log3 | wc -l
-5
-root@vagrant:~# kill 2146
-[1]+  Terminated              ping 127.0.0.1 > log1
+    root@vagrant:~# cat /dev/null >/proc/2146/fd/1
+    root@vagrant:~# cp /proc/2146/fd/1 /root/log3
+    root@vagrant:~# cat /root/log3 | wc -l
+    5
+    root@vagrant:~# kill 2146
+    [1]+  Terminated              ping 127.0.0.1 > log1
 ```
 
 Таким образом установлено, что выполнение команды "сброса" в виде конструкции `cat /dev/null >/proc/2146/fd/1` "обрезало" лог со 105 до 5 строк. Не нулевой результат при подсчёте строк в логе после "обрезки" обусловлен продолжающейся работой фоновой задачи.
@@ -80,10 +81,20 @@ root@vagrant:~# kill 2146
     /usr/sbin/opensnoop-bpfcc
     ```
 ## На какие файлы вы увидели вызовы группы `open` за первую секунду работы утилиты? Воспользуйтесь пакетом `bpfcc-tools` для Ubuntu 20.04. Дополнительные [сведения по установке](https://github.com/iovisor/bcc/blob/master/INSTALL.md).
-
+```bash
+    root@vagrant:~# dpkg -L bpfcc-tools | grep sbin/opensnoop
+    /usr/sbin/opensnoop-bpfcc
+    root@vagrant:~# /usr/sbin/opensnoop-bpfcc
+    PID    COMM               FD ERR PATH
+    795    vminfo              4   0 /var/run/utmp
+    581    dbus-daemon        -1   2 /usr/local/share/dbus-1/system-services
+    581    dbus-daemon        18   0 /usr/share/dbus-1/system-services
+    581    dbus-daemon        -1   2 /lib/dbus-1/system-services
+    581    dbus-daemon        18   0 /var/lib/snapd/dbus-1/system-services/
+```
 ## 6. Какой системный вызов использует `uname -a`? Приведите цитату из man по этому системному вызову, где описывается альтернативное местоположение в `/proc`, где можно узнать версию ядра и релиз ОС.
-Какой системный вызов использует `uname -a`? ***системный вызов `uname()`***
-Приведите цитату из `man`..:
+*Какой системный вызов использует `uname -a`?* ***системный вызов `uname()`***
+*Приведите цитату из `man`..:*
 ```bash
      Part of the utsname information is also accessible  via  /proc/sys/ker‐
        nel/{ostype, hostname, osrelease, version, domainname}.
@@ -123,4 +134,4 @@ root@vagrant:~# kill 2146
 S*(S,S+,Ss,Ssl,Ss+) - Процессы ожидающие завершения (спящие с прерыванием "сна")
 I*(I,I<) - фоновые(бездействующие) процессы ядра
 
-*что значат дополнительные к основной заглавной буквы статуса процессов* это дополнительные характеристики процесса (приоритет и т.д.)
+*что значат дополнительные к основной заглавной буквы статуса процессов* - это дополнительные характеристики процесса (приоритет и т.д.)
