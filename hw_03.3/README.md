@@ -4,6 +4,7 @@
 ```bash
 chdir("/tmp")
 ```
+
 ## 2. Попробуйте использовать команду `file` на объекты разных типов на файловой системе. Например:
     ```bash
     vagrant@netology1:~$ file /dev/tty
@@ -15,7 +16,9 @@ chdir("/tmp")
     ```
 ## Используя `strace` выясните, где находится база данных `file` на основании которой она делает свои догадки.
 ### *Искомая база - `/usr/share/misc/magic.mgc`*
+
 Из описания команды  `file` известно, что она для хранения типов использует базу `magic.mgc`. Для получения её местонахождения найдём упоминания `magig.mgc` в выводе `strace`:
+
 ```bash
 root@vagrant:~# strace file /dev/sda 2>&1 | grep magic.mgc
 stat("/root/.magic.mgc", 0x7ffc6ffd9760) = -1 ENOENT (No such file or directory)
@@ -31,13 +34,15 @@ openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
     `openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3`
 
 ## 3. Предположим, приложение пишет лог в текстовый файл. Этот файл оказался удален (deleted в lsof), однако возможности сигналом сказать приложению переоткрыть файлы или просто перезапустить приложение – нет. Так как приложение продолжает писать в удаленный файл, место на диске постепенно заканчивается. Основываясь на знаниях о перенаправлении потоков предложите способ обнуления открытого удаленного файла (чтобы освободить место на файловой системе).
+
 Как вариант, можно перенаправить вывод из `/dev/null` на файловый дескриптор удалённого файла:
 `cat /dev/null >/proc/<#PID>/fd/<#FD>`
+
 ***Источники:***
 - [**Восстановление открытых файлов но удаленных c файловой системы linux**](https://habr.com/ru/post/208104/)
 - [**Как обнулить файл, открытый другим процессом**](https://www.opennet.ru/openforum/vsluhforumID1/84543.html?n=met3x)
 
-***Основываясь на этих материалах выполнено:***
+***Основываясь на этих материалах выполнено:***  
   3.1. Создадим фоновую задачу `ping 127.0.0.1`, пишущую результат из `stdout` в файл `log1` и запомним её PID (здесь PID=2146):
 ```bash
     root@vagrant:~# ping 127.0.0.1 > log1 &
@@ -67,13 +72,11 @@ openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
     root@vagrant:~# kill 2146
     [1]+  Terminated              ping 127.0.0.1 > log1
 ```
-
 Таким образом установлено, что выполнение команды "сброса" в виде конструкции `cat /dev/null >/proc/2146/fd/1` "обрезало" лог со 105 до 5 строк. Не нулевой результат при подсчёте строк в логе после "обрезки" обусловлен продолжающейся работой фоновой задачи.
 
 ## 4. Занимают ли зомби-процессы какие-то ресурсы в ОС (CPU, RAM, IO)?
-Процесс при завершении (как нормальном, так и в результате не обрабатываемого сигнала) освобождает все свои ресурсы (CPU, RAM, IO) и становится «зомби» — пустой записью в таблице процессов, хранящей статус завершения, предназначенный для чтения родительским процессом.
+Процесс при завершении (как нормальном, так и в результате не обрабатываемого сигнала) освобождает все свои ресурсы (CPU, RAM, IO) и становится «зомби» — пустой записью в таблице процессов, хранящей статус завершения, предназначенный для чтения родительским процессом.  
 Зомби не занимают памяти, но блокируют записи в таблице процессов, размер которой ограничен для каждого пользователя и системы в целом.
-
 
 ## 5. В iovisor BCC есть утилита `opensnoop`:
     ```bash
@@ -106,8 +109,8 @@ openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
     root@netology1:~# test -d /tmp/some_dir && echo Hi
     root@netology1:~#
     ```
-`;`  - простой разделитель команд в строке, последующая команда выполнится вне зависимости от результата предыдущей.
-`&&` -  условный оператор, при котором следующая команда выполнится только при условии успешного завершения предыдущей
+`;`  - простой разделитель команд в строке, последующая команда выполнится вне зависимости от результата предыдущей.  
+`&&` -  условный оператор, при котором следующая команда выполнится только при условии успешного завершения предыдущей  
 ```bash
 # Выполнить `test` а потом - `echo` 
     root@netology1:~# test -d /tmp/some_dir; echo Hi
@@ -117,21 +120,29 @@ openat(AT_FDCWD, "/usr/share/misc/magic.mgc", O_RDONLY) = 3
     root@netology1:~#
 ```
 Т.к. каталога `/tmp/some_dir` не найдено, во втором случае команда `echo Hi` не выполняется.
+
 ##    Есть ли смысл использовать в bash `&&`, если применить `set -e`?
+
 Опция `set -e` - инвертирует стадартное поведение shell (игнорирование ошибок и продолжение работы сценария) и прерывает выполнение команды (например, сценарий shell) с возвратом кода состояния выхода команды, которая завершилась неудачно. Может быть использована для передачи кода возврата из вложенных сценариев (например, при отладке).
 
 `&&`  вместе с `set -e` не требуется, так как при установленном `set -e` при любых не нулевых кодах возврата команд выполнение сценария прекратится.
+
 ## 8. Из каких опций состоит режим bash `set -euxo pipefail` и почему его хорошо было бы использовать в сценариях?
-`-e` Exit immediately if a pipeline (see Pipelines), which may consist of a single simple command (see Simple Commands), a list (see Lists), or a compound command (see Compound Commands) returns a non-zero status.
-`-u` Treat unset variables and parameters other than the special parameters ‘@’ or ‘*’ as an error when performing parameter expansion. An error message will be written to the standard error, and a non-interactive shell will exit.
-`-x` Print a trace of simple commands, for commands, case commands, select commands, and arithmetic for commands and their arguments or associated word lists after they are expanded and before they are executed. 
-`-o pipefail` If set, the return value of a pipeline is the value of the last (rightmost) command to exit with a non-zero status, or zero if all commands in the pipeline exit successfully. This option is disabled by default. 
+
+`-e` Exit immediately if a pipeline (see Pipelines), which may consist of a single simple command (see Simple Commands), a list (see Lists), or a compound command (see Compound Commands) returns a non-zero status.  
+
+`-u` Treat unset variables and parameters other than the special parameters ‘@’ or ‘*’ as an error when performing parameter expansion. An error message will be written to the standard error, and a non-interactive shell will exit.  
+
+`-x` Print a trace of simple commands, for commands, case commands, select commands, and arithmetic for commands and their arguments or associated word lists after they are expanded and before they are executed.  
+
+`-o pipefail` If set, the return value of a pipeline is the value of the last (rightmost) command to exit with a non-zero status, or zero if all commands in the pipeline exit successfully. This option is disabled by default.  
 
 **Набор повышает детализацию логирования и, при наличии ошибок (не нулевых кодах возврата), прекратит выполнение сценария с кодом возврата ошибки.**
 
 ## 9. Используя `-o stat` для `ps`, определите, какой наиболее часто встречающийся статус у процессов в системе. В `man ps` ознакомьтесь (`/PROCESS STATE CODES`) что значат дополнительные к основной заглавной буквы статуса процессов. Его можно не учитывать при расчете (считать S, Ss или Ssl равнозначными).
-*...какой наиболее часто встречающийся статус у процессов в системе.*:
-S*(S,S+,Ss,Ssl,Ss+) - Процессы ожидающие завершения (спящие с прерыванием "сна")
-I*(I,I<) - фоновые(бездействующие) процессы ядра
+
+*...какой наиболее часто встречающийся статус у процессов в системе.*:  
+- `I*(I,I<)` - фоновые (Idle) процессы ядра
+- `S*(S,S+,Ss,Ss+,Ssl)` - Процессы ожидающие завершения (Sleeping)  
 
 *что значат дополнительные к основной заглавной буквы статуса процессов* - это дополнительные характеристики процесса (приоритет и т.д.)
