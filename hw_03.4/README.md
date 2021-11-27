@@ -169,9 +169,76 @@ root@vagrant:~# dmesg | grep virtual
 
 ## 5. Как настроен sysctl `fs.nr_open` на системе по-умолчанию? Узнайте, что означает этот параметр. Какой другой существующий лимит не позволит достичь такого числа (`ulimit --help`)?
 
+***Как настроен sysctl `fs.nr_open` на системе по-умолчанию?***
+```bash
+root@vagrant:~# /sbin/sysctl -n fs.nr_open
+1048576
+```
+
+***Узнайте, что означает этот параметр.***
+
+[Documentation for /proc/sys/fs/](https://www.kernel.org/doc/html/latest/admin-guide/sysctl/fs.html)
+
+
+**nr_open**
+
+*This denotes the maximum number of file-handles a process can allocate. Default value is 1024x1024 (1048576) which should be enough for most machines. Actual limit depends on RLIMIT_NOFILE resource limit.*
+
+***Какой другой существующий лимит не позволит достичь такого числа (`ulimit --help`)***
+
+Параметр `Soft limit` на `open files` (по умолчанию = 1024, просмотреть можно командой `ulimit -Sn`) не позволит достичь лимита заданного в `/proc/sys/fs/`. При необходимости `Soft limit` может быть увеличен в процессе работы, но не больше `Hard limit` (`ulimit -Hn`) .
+
+```bash
+root@vagrant:~# ulimit --help
+ulimit: ulimit [-SHabcdefiklmnpqrstuvxPT] [limit]
+    Modify shell resource limits.
+
+    Provides control over the resources available to the shell and processes
+    it creates, on systems that allow such control.
+
+    Options:
+      -S        use the `soft' resource limit
+      -H        use the `hard' resource limit
+    ...
+      -n        the maximum number of open file descriptors
+    ...
+
+    If LIMIT is given, it is the new value of the specified resource; the
+    special LIMIT values `soft', `hard', and `unlimited` stand for the
+    current soft limit, the current hard limit, and no limit, respectively.
+    Otherwise, the current value of the specified resource is printed.  If
+    no option is given, then -f is assumed.
+
+    Values are in 1024-byte increments, except for -t, which is in seconds,
+    -p, which is in increments of 512 bytes, and -u, which is an unscaled
+    number of processes.
+...
+root@vagrant:~# ulimit -Sn
+1024
+root@vagrant:~# ulimit -Hn
+1048576
+```
 
 ## 6. Запустите любой долгоживущий процесс (не `ls`, который отработает мгновенно, а, например, `sleep 1h`) в отдельном неймспейсе процессов; покажите, что ваш процесс работает под PID 1 через `nsenter`. Для простоты работайте в данном задании под root (`sudo -i`). Под обычным пользователем требуются дополнительные опции (`--map-root-user`) и т.д.
 
+**Командой `unshare` запустим процесс `sleep` в отдельном namespace**
+
+```bash
+vagrant@vagrant:~$ sudo unshare -u -fp --mount-proc sleep 1h
+```
+
+**Из другого сеанса найдем PID запущенного процесса `sleep` (здесь PID=1339), подключимся к нему с использованием `nsenter` (в приглашении изменится рабочий каталог) и выведем список процессов в этом изолированном namespace. Процесс `sleep` имеет PID=1 и PPID=0. Второе подключение имеет PID=2 и PPID=0 для командной оболочки `/bin/bash`, которая является родителем для процесса `ps` с PID=54**
+
+```bash
+root@vagrant:~# ps -e| grep sleep
+   1339 pts/1    00:00:00 sleep
+root@vagrant:~# nsenter -p -m -t 1339
+root@vagrant:/# ps -al
+F S   UID     PID    PPID  C PRI  NI ADDR SZ WCHAN  TTY          TIME CMD
+4 S     0       1       0  0  80   0 -  2019 hrtime pts/1    00:00:00 sleep
+0 S     0       2       0  0  80   0 -  2459 do_wai pts/0    00:00:00 bash
+0 R     0      54       2  0  80   0 -  2853 -      pts/0    00:00:00 ps
+```
 
 ## 7. Найдите информацию о том, что такое `:(){ :|:& };:`. Запустите эту команду в своей виртуальной машине Vagrant с Ubuntu 20.04 (**это важно, поведение в других ОС не проверялось**). Некоторое время все будет "плохо", после чего (минуты) – ОС должна стабилизироваться. Вызов `dmesg` расскажет, какой механизм помог автоматической стабилизации. Как настроен этот механизм по-умолчанию, и как изменить число процессов, которое можно создать в сессии?
 
