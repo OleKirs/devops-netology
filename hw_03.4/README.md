@@ -126,12 +126,33 @@ node_network_transmit_errs_total{device="eth0"} 0
 ```
 
 ## 3. Установите в свою виртуальную машину [Netdata](https://github.com/netdata/netdata). Воспользуйтесь [готовыми пакетами](https://packagecloud.io/netdata/netdata/install) для установки (`sudo apt install -y netdata`). После успешной установки:
-* в конфигурационном файле `/etc/netdata/netdata.conf` в секции [web] замените значение с localhost на `bind to = 0.0.0.0`,
+
+**Установлено**
+
+```bash
+    root@vagrant:~# apt list netdata
+    Listing... Done
+    netdata/focal,focal,now 1.19.0-3ubuntu1 all [installed]
+```
+
+* в конфигурационном файле `/etc/netdata/netdata.conf` в секции [web] замените значение с localhost на `bind to = 0.0.0.0
+
+```bash
+    root@vagrant:~# cat /etc/netdata/netdata.conf | grep sock
+            # bind socket to IP = 127.0.0.1
+            bind socket to IP = 0.0.0.0
+```
+
 * добавьте в Vagrantfile проброс порта Netdata на свой локальный компьютер и сделайте `vagrant reload`:
-    ```bash
+```bash
     config.vm.network "forwarded_port", guest: 19999, host: 19999
-    ```
+```
+
 После успешной перезагрузки в браузере *на своем ПК* (не в виртуальной машине) вы должны суметь зайти на `localhost:19999`. Ознакомьтесь с метриками, которые по умолчанию собираются Netdata и с комментариями, которые даны к этим метрикам.
+
+Консоль загрузилась успешно:
+!["Netdata Dashboard"](https://github.com/OleKirs/devops-netology/blob/main/hw_03.4/hw3.4-1.png "Netdata Dashboard")
+
 
 ## 4. Можно ли по выводу `dmesg` понять, осознает ли ОС, что загружена не на настоящем оборудовании, а на системе виртуализации?
 
