@@ -156,6 +156,16 @@ node_network_transmit_errs_total{device="eth0"} 0
 
 ## 4. Можно ли по выводу `dmesg` понять, осознает ли ОС, что загружена не на настоящем оборудовании, а на системе виртуализации?
 
+**ОС получает информацию о работt в вируальном окружении:**
+
+```bash
+root@vagrant:~# dmesg | grep virtual
+[    0.021197] CPU MTRRs all blank - virtualized system.
+[    2.970903] Booting paravirtualized kernel on KVM
+[   10.210413] systemd[1]: Detected virtualization oracle.
+```
+
+**Видно, что ОС загружена в режиме паравиртуализации на KVM - `Booting paravirtualized kernel on KVM`. И, далее, видно, что обнаружена виртуализация Oracle (VirtualBox) - `Detected virtualization oracle`**
 
 ## 5. Как настроен sysctl `fs.nr_open` на системе по-умолчанию? Узнайте, что означает этот параметр. Какой другой существующий лимит не позволит достичь такого числа (`ulimit --help`)?
 
