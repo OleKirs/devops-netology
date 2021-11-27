@@ -2,6 +2,8 @@
 
 ## 1. На лекции мы познакомились с [node_exporter](https://github.com/prometheus/node_exporter/releases). В демонстрации его исполняемый файл запускался в background. Этого достаточно для демо, но не для настоящей production-системы, где процессы должны находиться под внешним управлением. Используя знания из лекции по systemd, создайте самостоятельно простой [unit-файл](https://www.freedesktop.org/software/systemd/man/systemd.service.html) для node_exporter:
 
+**UNIT-file:**
+
 ```bash
 root@vagrant:~# cat > /etc/systemd/system/node_exporter.service
     [Unit]
@@ -12,8 +14,7 @@ root@vagrant:~# cat > /etc/systemd/system/node_exporter.service
     User=nodeusr
     Group=nodeusr
     Type=simple
-    EnvironmentFile=/etc/node_exporter.cfg
-    ExecStart=/usr/local/bin/node_exporter ${OPTIONS}
+    ExecStart=/usr/local/bin/node_exporter
     ExecReload=/bin/kill -HUP $MAINPID
     Restart=on-failure
     
