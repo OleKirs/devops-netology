@@ -22,7 +22,9 @@ root@vagrant:~# cat > /etc/systemd/system/node_exporter.service
     WantedBy=multi-user.target
 
 ```
-* поместите его в автозагрузку,
+
+## поместите его в автозагрузку,
+
 ```bash
 root@vagrant:~# systemctl enable node_exporter
 ...
@@ -30,7 +32,8 @@ root@vagrant:~# systemctl enable node_exporter
              Loaded: loaded (/etc/systemd/system/node_exporter.service; enabled; vendor preset: enabled)
 ...
 ```
-* предусмотрите возможность добавления опций к запускаемому процессу через внешний файл (посмотрите, например, на `systemctl cat cron`),
+
+## предусмотрите возможность добавления опций к запускаемому процессу через внешний файл (посмотрите, например, на `systemctl cat cron`),
 
 **Создадим файл с описанием параметров запуска:** 
 
@@ -47,11 +50,11 @@ root@vagrant:~# nano /etc/systemd/system/node_exporter.service
 
 **Добавим в секцию `Service` параметры для запуска и расположение файла с ними:**
 
->    [Service]
->    ...
->    EnvironmentFile=/etc/node_exporter.cfg
->    ExecStart=/usr/local/bin/node_exporter ${OPTIONS}
->    ...
+>[Service]  
+>...  
+>EnvironmentFile=/etc/node_exporter.cfg  
+>ExecStart=/usr/local/bin/node_exporter ${OPTIONS}  
+>...  
 
 **Перечитаем файлы конфигурации и перезапустим процесс `node_exporter`. После чего проверим состояние процесса. Видно, что процесс запущен с параметром `-collector.systemd` из файла `/etc/node_exporter.cfg`:**
 
@@ -69,7 +72,7 @@ root@vagrant:~# systemctl status node_exporter
              └─3029 /usr/local/bin/node_exporter --collector.systemd
 ```
     
-* удостоверьтесь, что с помощью systemctl процесс корректно стартует, завершается, а после перезагрузки автоматически поднимается.
+## удостоверьтесь, что с помощью systemctl процесс корректно стартует, завершается, а после перезагрузки автоматически поднимается.
 
 **Проверено, процесс стартует после перезагрузки и управляется через `systemctl` корректно.**
 
