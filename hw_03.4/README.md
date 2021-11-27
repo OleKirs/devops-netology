@@ -1,223 +1,322 @@
-﻿# Домашнее задание к занятию "3.6. Компьютерные сети, лекция 1"
+﻿# Домашнее задание к занятию "3.4. Операционные системы, лекция 2"
 
-## 1. Работа c HTTP через телнет.
+## 1. На лекции мы познакомились с [node_exporter](https://github.com/prometheus/node_exporter/releases). В демонстрации его исполняемый файл запускался в background. Этого достаточно для демо, но не для настоящей production-системы, где процессы должны находиться под внешним управлением. 
 
-* Подключитесь утилитой телнет к сайту stackoverflow.com `telnet stackoverflow.com 80`
+### 1.1. Используя знания из лекции по systemd, создайте самостоятельно простой [unit-файл](https://www.freedesktop.org/software/systemd/man/systemd.service.html) для node_exporter:
 
-```bash
-root@vagrant:~# telnet stackoverflow.com 80
-Trying 151.101.65.69...
-Connected to stackoverflow.com.
-Escape character is '^]'.
-```
-
-* Отправьте HTTP запрос
-```bash
-GET /questions HTTP/1.0
-HOST: stackoverflow.com
-[press enter]
-[press enter]
-```
-
-* В ответе укажите полученный HTTP код, что он означает?
- 
-**Ответ: получен код `301 Moved Permanently`, который означаетс что ресурс перемещён на постоянной основе (перманентный редирект) на новый адрес указанный в поле `location`**
+**UNIT-file:**
 
 ```bash
-HTTP/1.1 301 Moved Permanently
-cache-control: no-cache, no-store, must-revalidate
-location: https://stackoverflow.com/questions
-x-request-guid: 342ae2bc-d907-4948-8290-45bf350a7f28
-feature-policy: microphone 'none'; speaker 'none'
-content-security-policy: upgrade-insecure-requests; frame-ancestors 'self' https://stackexchange.com
-Accept-Ranges: bytes
-Date: Sat, 27 Nov 2021 20:50:25 GMT
-Via: 1.1 varnish
-Connection: close
-X-Served-By: cache-hhn4074-HHN
-X-Cache: MISS
-X-Cache-Hits: 0
-X-Timer: S1638046225.842586,VS0,VE184
-Vary: Fastly-SSL
-X-DNS-Prefetch-Control: off
-Set-Cookie: prov=54814b61-6c7b-5fd9-6948-5cf68f79f1cd; domain=.stackoverflow.com; expires=Fri, 01-Jan-2055 00:00:00 GMT; path=/; HttpOnly
+root@vagrant:~# cat > node_exporter.service
+    [Unit]
+    Description=Node Exporter Service
+    After=network.target
+    
+    [Service]
+    User=nodeusr
+    Group=nodeusr
+    Type=simple
+    ExecStart=/usr/local/bin/node_exporter
+    ExecReload=/bin/kill -HUP $MAINPID
+    Restart=on-failure
+    
+    [Install]
+    WantedBy=multi-user.target
 
-Connection closed by foreign host.
 ```
 
-## 2.   Повторите задание 1 в браузере, используя консоль разработчика F12.
-
-* откройте вкладку Network
-* отправьте запрос http://stackoverflow.com
-* найдите первый ответ HTTP сервера, откройте вкладку Headers
-* укажите в ответе полученный HTTP код.
-
-**IE11 возвращает ошибку 301 и не продолжает обработку (не срабатывает автопереход). Firefox и Chrome сразу переходят на HTTPS и начинают показывать историю с кода 200 "OK" на URL = https://stackoverflow.com/**
-
-* проверьте время загрузки страницы, какой запрос обрабатывался дольше всего?
-Дольше всего (573 мс) обрабатывался запрос на загрузку самого документа:
-```bash
-curl "https://stackoverflow.com/" ^
-  -H "authority: stackoverflow.com" ^
-  -H "sec-ch-ua: ^\^" Not A;Brand^\^";v=^\^"99^\^", ^\^"Chromium^\^";v=^\^"96^\^", ^\^"Google Chrome^\^";v=^\^"96^\^"" ^
-  -H "sec-ch-ua-mobile: ?0" ^
-  -H "sec-ch-ua-platform: ^\^"Windows^\^"" ^
-  -H "upgrade-insecure-requests: 1" ^
-  -H "user-agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36" ^
-  -H "accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9" ^
-  -H "sec-fetch-site: none" ^
-  -H "sec-fetch-mode: navigate" ^
-  -H "sec-fetch-user: ?1" ^
-  -H "sec-fetch-dest: document" ^
-  -H "accept-language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7" ^
-  --compressed
-```
-* приложите скриншот консоли браузера в ответ.
-
-![Скриншот Google Chrome](https://github.com/OleKirs/devops-netology/blob/main/hw_03.6/hw3.6-1.png  "Скриншот Google Chrome")
-
-## 3. Какой IP адрес у вас в интернете?
+### 1.2. Поместите его в автозагрузку,
 
 ```bash
-root@vagrant:~# dig +short myip.opendns.com @resolver1.opendns.com
-195.144.231.174
+root@vagrant:~# cp node_exporter.service /etc/systemd/system
+root@vagrant:~# systemctl enable node_exporter
+...
+         node_exporter.service - Node Exporter Service
+             Loaded: loaded (/etc/systemd/system/node_exporter.service; enabled; vendor preset: enabled)
+...
 ```
 
-## 4. Какому провайдеру принадлежит ваш IP адрес? Какой автономной системе AS? Воспользуйтесь утилитой whois
+### 1.3. Предусмотрите возможность добавления опций к запускаемому процессу через внешний файл (посмотрите, например, на `systemctl cat cron`),
 
-**Провайдер: `PSTAR-MNT` (North-West branch of OJSC MegaFon)**
-**Автономная система: `AS20632`**
+**Создадим файл с описанием параметров запуска:** 
 
 ```bash
-root@vagrant:~# whois 195.144.231.174
-% This is the RIPE Database query service.
-% The objects are in RPSL format.
-%
-% The RIPE Database is subject to Terms and Conditions.
-% See http://www.ripe.net/db/support/db-terms-conditions.pdf
-
-% Note: this output has been filtered.
-%       To receive output for a database update, use the "-B" flag.
-
-% Information related to '195.144.231.172 - 195.144.231.175'
-
-% Abuse contact for '195.144.231.172 - 195.144.231.175' is 'abuse-mailbox@megafon.ru'
-
-inetnum:        195.144.231.172 - 195.144.231.175
-netname:        TEKSTIL-REPUBLIK-LAN
-descr:          Tekstil Republik
-descr:          St.Petersburg
-descr:          JSC PeterStar
-country:        RU
-admin-c:        DTD1-RIPE
-tech-c:         DTD1-RIPE
-status:         ASSIGNED PA
-mnt-by:         PSTAR-MNT
-created:        2014-05-23T06:45:55Z
-last-modified:  2014-05-23T06:45:55Z
-source:         RIPE
-
-role:           MegaFon Network Operation Center
-address:        North-West branch of OJSC MegaFon
-address:        10, Karavannaya street
-address:        Saint-Petersburg, Russia, 191011
-phone:          +7 812 329 9090
-fax-no:         +7 812 329 9003
-abuse-mailbox:  abuse-mailbox@megafon.ru
-remarks:        trouble: --------------------------------------------------
-remarks:        SPAM and Network security: abuse-mailbox@megafon.ru
-remarks:        Technical questions: gnocwest_tr@megafon.ru
-remarks:        Routing and peering: gnoceast_backbone@megafon.ru
-remarks:        Information: http://www.megafon.ru
-remarks:        trouble: --------------------------------------------------
-admin-c:        MFON-RIPE
-tech-c:         NATS-RIPE
-tech-c:         ASIM1-RIPE
-tech-c:         KB302-RIPE
-tech-c:         TIMP-RIPE
-tech-c:         FS1768-RIPE
-tech-c:         AA10300-RIPE
-tech-c:         MFON-RIPE
-nic-hdl:        DTD1-RIPE
-mnt-by:         PSTAR-MNT
-mnt-by:         MEGAFON-RIPE-MNT
-mnt-by:         MEGAFON-GNOC-MNT
-mnt-by:         MEGAFON-WEST-MNT
-created:        2001-11-27T07:58:31Z
-last-modified:  2019-04-22T13:37:41Z
-source:         RIPE # Filtered
-
-% Information related to '195.144.224.0/19AS20632'
-
-route:          195.144.224.0/19
-descr:          PJSC "Megafon"
-descr:          St.Petersburg
-mnt-routes:     MEGAFON-AUTO-MNT
-origin:         AS20632
-mnt-by:         MEGAFON-RIPE-MNT
-created:        2004-01-13T07:00:50Z
-last-modified:  2020-03-04T14:43:43Z
-source:         RIPE
-
-% This query was served by the RIPE Database Query Service version 1.101 (WAGYU)
+root@vagrant:~# cat /etc/node_exporter.cfg
+    OPTIONS='--collector.systemd'
 ```
 
-## 5. Через какие сети проходит пакет, отправленный с вашего компьютера на адрес 8.8.8.8? Через какие AS? Воспользуйтесь утилитой traceroute
+**Отредактируем файл `/etc/systemd/system/node_exporter.service`:**
 
 ```bash
-root@Deb10-Lab:~# traceroute -An 8.8.8.8
-traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
- 1  10.10.7.1 [*]  0.611 ms  1.045 ms  0.649 ms
- 2  10.10.0.1 [*]  1.524 ms * *
- 3  8.8.8.8 [AS15169]  28.476 ms  32.633 ms  32.361 ms
+root@vagrant:~# nano /etc/systemd/system/node_exporter.service
 ```
 
-## 6. Повторите задание 5 в утилите mtr. На каком участке наибольшая задержка - delay?
+**Добавим в секцию `Service` параметры для запуска и расположение файла с ними:**
 
-![Скриншот консоли с `mtr`](https://github.com/OleKirs/devops-netology/blob/main/hw_03.6/hw3.6-2.png  "Скриншот консоли с `mtr`")
+>[Service]  
+>...  
+>EnvironmentFile=/etc/node_exporter.cfg  
+>ExecStart=/usr/local/bin/node_exporter ${OPTIONS}  
+>...  
 
-### На каком участке наибольшая задержка - delay?
-
-**В целом RTT приемлемое. Если смотреть на графу `wrst`, то это ip=74.125.244.180. Но это может быть разовый "провал".**
-
-## 7. Какие DNS сервера отвечают за доменное имя dns.google? Какие A записи? воспользуйтесь утилитой dig
-
-### Какие DNS сервера отвечают за доменное имя dns.google?
+**Перечитаем файлы конфигурации и перезапустим процесс `node_exporter`. После чего проверим состояние процесса. Видно, что процесс запущен с параметром `-collector.systemd` из файла `/etc/node_exporter.cfg`:**
 
 ```bash
-root@vagrant:~# dig google.com NS +short
-ns2.google.com.
-ns1.google.com.
-ns3.google.com.
-ns4.google.com.
+root@vagrant:~# systemctl daemon-reload
+root@vagrant:~# systemctl restart node_exporter
+root@vagrant:~# systemctl status node_exporter
+● node_exporter.service - Node Exporter Service
+     Loaded: loaded (/etc/systemd/system/node_exporter.service; enabled; vendor preset: enabled)
+     Active: active (running) since Sat 2021-11-27 10:39:19 UTC; 7min ago
+   Main PID: 3029 (node_exporter)
+      Tasks: 8 (limit: 1071)
+     Memory: 8.6M
+     CGroup: /system.slice/node_exporter.service
+             └─3029 /usr/local/bin/node_exporter --collector.systemd
 ```
+    
+### 1.4. Удостоверьтесь, что с помощью systemctl процесс корректно стартует, завершается, а после перезагрузки автоматически поднимается.
 
-### Какие A записи?
+**Проверено, процесс стартует после перезагрузки и управляется через `systemctl` корректно.**
+
+**Например:**
 
 ```bash
-root@vagrant:~# dig google.com A +short
-173.194.222.100
-173.194.222.102
-173.194.222.113
-173.194.222.138
-173.194.222.101
-173.194.222.139
+root@vagrant:~# systemctl stop node_exporter
+root@vagrant:~# systemctl status node_exporter
+● node_exporter.service - Node Exporter Service
+     Loaded: loaded (/etc/systemd/system/node_exporter.service; enabled; vendor preset: enabled)
+     Active: inactive (dead) since Sat 2021-11-27 10:48:03 UTC; 1s ago
+    Process: 3029 ExecStart=/usr/local/bin/node_exporter ${OPTIONS} (code=killed, signal=TERM)
+   Main PID: 3029 (code=killed, signal=TERM)
+
+...
+Nov 27 10:48:03 vagrant systemd[1]: Stopping Node Exporter Service...
+Nov 27 10:48:03 vagrant systemd[1]: node_exporter.service: Succeeded.
+Nov 27 10:48:03 vagrant systemd[1]: Stopped Node Exporter Service.
+
+root@vagrant:~# systemctl start node_exporter
+root@vagrant:~# systemctl status node_exporter
+● node_exporter.service - Node Exporter Service
+     Loaded: loaded (/etc/systemd/system/node_exporter.service; enabled; vendor preset: enabled)
+     Active: active (running) since Sat 2021-11-27 10:48:16 UTC; 3s ago
+   Main PID: 3076 (node_exporter)
+      Tasks: 5 (limit: 1071)
+     Memory: 2.9M
+     CGroup: /system.slice/node_exporter.service
+             └─3076 /usr/local/bin/node_exporter --collector.systemd
 ```
 
-## 8. Проверьте PTR записи для IP адресов из задания 7. Какое доменное имя привязано к IP? воспользуйтесь утилитой dig
+## 2. Ознакомьтесь с опциями node_exporter и выводом `/metrics` по-умолчанию. Приведите несколько опций, которые вы бы выбрали для базового мониторинга хоста по CPU, памяти, диску и сети.
+
+**Базовые метрики не очень удобны для мониторинга "руками". Но если использовать, то возможно есть смысл использовать эти метрики:**
+
+**CPU (по каждому ядру):**
 
 ```bash
-root@vagrant:~# dig +short -x 173.194.222.100
-lo-in-f100.1e100.net.
-root@vagrant:~# dig +short -x 173.194.222.101
-lo-in-f101.1e100.net.
-root@vagrant:~# dig +short -x 173.194.222.102
-lo-in-f102.1e100.net.
-root@vagrant:~# dig +short -x 173.194.222.113
-lo-in-f113.1e100.net.
-root@vagrant:~# dig +short -x 173.194.222.138
-lo-in-f138.1e100.net.
-root@vagrant:~# dig +short -x 173.194.222.139
-lo-in-f139.1e100.net.
+# TYPE node_cpu_seconds_total counter
+node_cpu_seconds_total{cpu="0",mode="idle"} 5781.19
+node_cpu_seconds_total{cpu="0",mode="iowait"} 28.36
+node_cpu_seconds_total{cpu="0",mode="irq"} 0
+node_cpu_seconds_total{cpu="0",mode="nice"} 0.07
+node_cpu_seconds_total{cpu="0",mode="softirq"} 19.8
+node_cpu_seconds_total{cpu="0",mode="steal"} 0
+node_cpu_seconds_total{cpu="0",mode="system"} 134.97
+node_cpu_seconds_total{cpu="0",mode="user"} 155.62
 ```
 
+**Память:**
+
+```bash
+node_memory_MemAvailable_bytes 5.90307328e+08
+node_memory_MemFree_bytes 1.28958464e+08
+node_memory_MemTotal_bytes 1.028694016e+09
+```
+
+**Диски (по каждому диску) - IOPS, прочитано байтб записано байт.**
+**Нужно смотреть в динамике:**
+
+```bash
+node_disk_io_now{device="sda"} 0
+node_disk_read_bytes_total{device="sda"} 8.92548096e+08
+node_disk_written_bytes_total{device="sda"} 1.082418176e+09
+```
+
+**Сетевые адаптеры (по интересующим нас интерфейсам). Для контроля скорости, ошибок и перегрузки на интерфейсе:**
+**Нужно смотреть в динамике:**
+
+```bash
+node_network_receive_bytes_total{device="eth0"} 9.9387647e+07
+node_network_receive_packets_total{device="eth0"} 89626
+node_network_receive_drop_total{device="eth0"} 0
+node_network_receive_errs_total{device="eth0"} 0
+node_network_transmit_bytes_total{device="eth0"} 1.4594385e+07
+node_network_transmit_packets_total{device="eth0"} 34929
+node_network_transmit_colls_total{device="eth0"} 0
+node_network_transmit_drop_total{device="eth0"} 0
+node_network_transmit_errs_total{device="eth0"} 0
+```
+
+## 3. Установите в свою виртуальную машину [Netdata](https://github.com/netdata/netdata). Воспользуйтесь [готовыми пакетами](https://packagecloud.io/netdata/netdata/install) для установки (`sudo apt install -y netdata`). После успешной установки:
+
+**Установлено**
+
+```bash
+    root@vagrant:~# apt list netdata
+    Listing... Done
+    netdata/focal,focal,now 1.19.0-3ubuntu1 all [installed]
+```
+
+* в конфигурационном файле `/etc/netdata/netdata.conf` в секции [web] замените значение с localhost на `bind to = 0.0.0.0
+
+```bash
+    root@vagrant:~# cat /etc/netdata/netdata.conf | grep sock
+            # bind socket to IP = 127.0.0.1
+            bind socket to IP = 0.0.0.0
+```
+
+* добавьте в Vagrantfile проброс порта Netdata на свой локальный компьютер и сделайте `vagrant reload`:
+```bash
+    config.vm.network "forwarded_port", guest: 19999, host: 19999
+```
+
+После успешной перезагрузки в браузере *на своем ПК* (не в виртуальной машине) вы должны суметь зайти на `localhost:19999`. Ознакомьтесь с метриками, которые по умолчанию собираются Netdata и с комментариями, которые даны к этим метрикам.
+
+Консоль загрузилась успешно:
+!["Netdata Dashboard"](https://github.com/OleKirs/devops-netology/blob/main/hw_03.4/hw3.4-1.png "Netdata Dashboard")
+
+
+## 4. Можно ли по выводу `dmesg` понять, осознает ли ОС, что загружена не на настоящем оборудовании, а на системе виртуализации?
+
+**ОС получает информацию о работt в вируальном окружении:**
+
+```bash
+root@vagrant:~# dmesg | grep virtual
+[    0.021197] CPU MTRRs all blank - virtualized system.
+[    2.970903] Booting paravirtualized kernel on KVM
+[   10.210413] systemd[1]: Detected virtualization oracle.
+```
+
+**Видно, что ОС загружена в режиме паравиртуализации на KVM - `Booting paravirtualized kernel on KVM`. И, далее, видно, что обнаружена виртуализация Oracle (VirtualBox) - `Detected virtualization oracle`**
+
+## 5. Как настроен sysctl `fs.nr_open` на системе по-умолчанию? Узнайте, что означает этот параметр. Какой другой существующий лимит не позволит достичь такого числа (`ulimit --help`)?
+
+***Как настроен sysctl `fs.nr_open` на системе по-умолчанию?***
+```bash
+root@vagrant:~# /sbin/sysctl -n fs.nr_open
+1048576
+```
+
+***Узнайте, что означает этот параметр.***
+
+[Documentation for /proc/sys/fs/](https://www.kernel.org/doc/html/latest/admin-guide/sysctl/fs.html)
+
+
+>**nr_open**  
+>  
+>*This denotes the maximum number of file-handles a process can allocate. Default value is 1024x1024 (1048576) which should be enough for most machines. Actual limit depends on RLIMIT_NOFILE resource limit.*
+
+***Какой другой существующий лимит не позволит достичь такого числа (`ulimit --help`)***
+
+Параметр `Soft limit` на `open files` (по умолчанию = 1024, просмотреть можно командой `ulimit -Sn`) не позволит достичь лимита заданного в `/proc/sys/fs/`. При необходимости `Soft limit` может быть увеличен в процессе работы, но не больше `Hard limit` (`ulimit -Hn`) .
+
+```bash
+root@vagrant:~# ulimit --help
+ulimit: ulimit [-SHabcdefiklmnpqrstuvxPT] [limit]
+    Modify shell resource limits.
+
+    Provides control over the resources available to the shell and processes
+    it creates, on systems that allow such control.
+
+    Options:
+      -S        use the `soft' resource limit
+      -H        use the `hard' resource limit
+    ...
+      -n        the maximum number of open file descriptors
+    ...
+
+    If LIMIT is given, it is the new value of the specified resource; the
+    special LIMIT values `soft', `hard', and `unlimited` stand for the
+    current soft limit, the current hard limit, and no limit, respectively.
+    Otherwise, the current value of the specified resource is printed.  If
+    no option is given, then -f is assumed.
+
+    Values are in 1024-byte increments, except for -t, which is in seconds,
+    -p, which is in increments of 512 bytes, and -u, which is an unscaled
+    number of processes.
+...
+root@vagrant:~# ulimit -Sn
+1024
+root@vagrant:~# ulimit -Hn
+1048576
+```
+
+## 6. Запустите любой долгоживущий процесс (не `ls`, который отработает мгновенно, а, например, `sleep 1h`) в отдельном неймспейсе процессов; покажите, что ваш процесс работает под PID 1 через `nsenter`. Для простоты работайте в данном задании под root (`sudo -i`). Под обычным пользователем требуются дополнительные опции (`--map-root-user`) и т.д.
+
+**Командой `unshare` запустим процесс `sleep` в отдельном namespace**
+
+```bash
+vagrant@vagrant:~$ sudo unshare -u -fp --mount-proc sleep 1h
+```
+
+**Из другого сеанса найдем PID запущенного процесса `sleep` (здесь PID=1339), подключимся к нему с использованием `nsenter` (в приглашении изменится рабочий каталог) и выведем список процессов в этом изолированном namespace. Процесс `sleep` имеет PID=1 и PPID=0. Второе подключение имеет PID=2 и PPID=0 для командной оболочки `/bin/bash`, которая является родителем для процесса `ps` с PID=54**
+
+```bash
+root@vagrant:~# ps -e| grep sleep
+   1339 pts/1    00:00:00 sleep
+root@vagrant:~# nsenter -p -m -t 1339
+root@vagrant:/# ps -al
+F S   UID     PID    PPID  C PRI  NI ADDR SZ WCHAN  TTY          TIME CMD
+4 S     0       1       0  0  80   0 -  2019 hrtime pts/1    00:00:00 sleep
+0 S     0       2       0  0  80   0 -  2459 do_wai pts/0    00:00:00 bash
+0 R     0      54       2  0  80   0 -  2853 -      pts/0    00:00:00 ps
+```
+
+## 7. Найдите информацию о том, что такое `:(){ :|:& };:`. Запустите эту команду в своей виртуальной машине Vagrant с Ubuntu 20.04 (**это важно, поведение в других ОС не проверялось**). Некоторое время все будет "плохо", после чего (минуты) – ОС должна стабилизироваться. 
+
+***`:(){ :|:& };:` - Логическая бомба (известная также как "fork bomb"), забивающая память системы, что в итоге приводит к её зависанию.***  
+
+**Другая запись (не "односторочник"):**
+
+```bash
+    fncton() {
+        fncton | fncton &
+        };
+    fncton
+```
+**Этот код создаёт функцию, которая запускает два своих экземпляра, которые снова запускают эту функцию до тех пор, пока не закончится память.**  
+
+**Другие варианты "бомбы" на сайте Википедии:** [**Fork-бомба**](https://ru.wikipedia.org/wiki/Fork-%D0%B1%D0%BE%D0%BC%D0%B1%D0%B0)
+
+## Вызов `dmesg` расскажет, какой механизм помог автоматической стабилизации. 
+
+```bash
+vagrant@vagrant:~$ dmesg | grep fork
+[ 1655.040067] cgroup: fork rejected by pids controller in /user.slice/user-1000.slice/session-3.scope
+```
+
+## Как настроен этот механизм по-умолчанию, и как изменить число процессов, которое можно создать в сессии?
+
+**Управление максимальным количеством одновременно запущенных пользователем процессов выполняется командой `ulimit`:**
+
+```bash
+root@vagrant:/# ulimit --help
+...
+      -u        the maximum number of user processes
+...
+```
+
+**Определим значение по-умолчанию**
+
+```bash
+root@vagrant:/# ulimit -u
+3571
+```
+
+**Установим ограничение для пользователя в 1000 процессов:**
+
+```bash
+root@vagrant:/# ulimit -u 1000
+root@vagrant:/# ulimit -u
+1000
+```
