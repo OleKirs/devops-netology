@@ -125,22 +125,22 @@ root@vagrant:~# pvcreate /dev/md{0,1}
 ## 9. Создайте общую volume-group на этих двух PV.
 
 ```bash
-root@vagrant:~# vgcreate vg1 /dev/md{0,1}
-  Volume group "vg1" successfully created
+root@vagrant:~# vgcreate vg0 /dev/md{0,1}
+  Volume group "vg0" successfully created
 root@vagrant:~# vgs
   VG        #PV #LV #SN Attr   VSize   VFree
-  vg1         2   1   0 wz--n-  <2.99g 2.89g
+  vg0         2   1   0 wz--n-  <2.99g 2.89g
   vgvagrant   1   2   0 wz--n- <63.50g    0
 ```
 
 ## 10. Создайте LV размером 100 Мб, указав его расположение на PV с RAID0.
 
 ```bash
-root@vagrant:~# lvcreate -L 100M vg1 /dev/md1
+root@vagrant:~# lvcreate -L 100M vg0 /dev/md1
   Logical volume "lvol0" created.
 root@vagrant:~# lvs
   LV     VG        Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
-  lvol0  vg1       -wi-a----- 100.00m
+  lvol0  vg0       -wi-a----- 100.00m
   root   vgvagrant -wi-ao---- <62.54g
   swap_1 vgvagrant -wi-ao---- 980.00m
 ```
@@ -148,7 +148,7 @@ root@vagrant:~# lvs
 ## 11. Создайте `mkfs.ext4` ФС на получившемся LV.
 
 ```bash
-root@vagrant:~# mkfs.ext4 /dev/vg1/lvol0
+root@vagrant:~# mkfs.ext4 /dev/vg0/lvol0
 mke2fs 1.45.5 (07-Jan-2020)
 Creating filesystem with 25600 4k blocks and 25600 inodes
 
@@ -161,7 +161,7 @@ Writing superblocks and filesystem accounting information: done
 ## 12. Смонтируйте этот раздел в любую директорию, например, `/tmp/new`.
 
 ```bash
-root@vagrant:~# mkdir /tmp/new && mount -t ext4 /dev/vg1/lvol0 /tmp/new
+root@vagrant:~# mkdir /tmp/new && mount -t ext4 /dev/vg0/lvol0 /tmp/new
 ```
 
 ## 13. Поместите туда тестовый файл, например `wget https://mirror.yandex.ru/ubuntu/ls-lR.gz -O /tmp/new/test.gz`.
@@ -196,13 +196,13 @@ sdb                    8:16   0  2.5G  0 disk
 │ └─md0                9:0    0    2G  0 raid1
 └─sdb2                 8:18   0  511M  0 part
   └─md1                9:1    0 1018M  0 raid0
-    └─vg1-lvol0      253:2    0  100M  0 lvm   /tmp/new
+    └─vg0-lvol0      253:2    0  100M  0 lvm   /tmp/new
 sdc                    8:32   0  2.5G  0 disk
 ├─sdc1                 8:33   0    2G  0 part
 │ └─md0                9:0    0    2G  0 raid1
 └─sdc2                 8:34   0  511M  0 part
   └─md1                9:1    0 1018M  0 raid0
-    └─vg1-lvol0      253:2    0  100M  0 lvm   /tmp/new
+    └─vg0-lvol0      253:2    0  100M  0 lvm   /tmp/new
 ```
 
 ## 15. Протестируйте целостность файла:
@@ -233,13 +233,13 @@ NAME                 MAJ:MIN RM  SIZE RO TYPE  MOUNTPOINT
 sdb                    8:16   0  2.5G  0 disk
 ├─sdb1                 8:17   0    2G  0 part
 │ └─md0                9:0    0    2G  0 raid1
-│   └─vg1-lvol0      253:2    0  100M  0 lvm   /tmp/new
+│   └─vg0-lvol0      253:2    0  100M  0 lvm   /tmp/new
 └─sdb2                 8:18   0  511M  0 part
   └─md1                9:1    0 1018M  0 raid0
 sdc                    8:32   0  2.5G  0 disk
 ├─sdc1                 8:33   0    2G  0 part
 │ └─md0                9:0    0    2G  0 raid1
-│   └─vg1-lvol0      253:2    0  100M  0 lvm   /tmp/new
+│   └─vg0-lvol0      253:2    0  100M  0 lvm   /tmp/new
 └─sdc2                 8:34   0  511M  0 part
   └─md1                9:1    0 1018M  0 raid0
 ```
@@ -255,11 +255,7 @@ mdadm: set /dev/sdc1 faulty in /dev/md0
 
 ```bash
 root@vagrant:~# dmesg |grep md0
-[  752.674490] md/raid1:md0: not clean -- starting background reconstruction
-[  752.674492] md/raid1:md0: active with 2 out of 2 mirrors
-[  752.674525] md0: detected capacity change from 0 to 2144337920
-[  752.684522] md: resync of RAID array md0
-[  763.447557] md: md0: resync done.
+...
 [ 2182.486385] md/raid1:md0: Disk failure on sdc1, disabling device.
                md/raid1:md0: Operation continuing on 1 devices.
 ```
@@ -295,4 +291,4 @@ PS D:\VBox\VMs\DevOps2021> vagrant destroy
 ==> default: Destroying VM and associated drives..
 ```
 
- ---
+---
