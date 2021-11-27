@@ -74,7 +74,7 @@ curl "https://stackoverflow.com/" ^
 ```
 * приложите скриншот консоли браузера в ответ.
 
-![Скриншот Google Chrome](https://github.com "Скриншот Google Chrome")
+![Скриншот Google Chrome](https://github.com/OleKirs/devops-netology/blob/main/hw_03.6/hw3.6-1.png  "Скриншот Google Chrome")
 
 ## 3. Какой IP адрес у вас в интернете?
 
@@ -174,7 +174,11 @@ traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
 
 ## 6. Повторите задание 5 в утилите mtr. На каком участке наибольшая задержка - delay?
 
-![Скриншот консоли с `mtr`](https://github.com/2 "Скриншот консоли с `mtr`")
+![Скриншот консоли с `mtr`](https://github.com/OleKirs/devops-netology/blob/main/hw_03.6/hw3.6-2.png  "Скриншот консоли с `mtr`")
+
+### На каком участке наибольшая задержка - delay?
+
+**В целом RTT приемлемое. Если смотреть на графу `wrst`, то это ip=74.125.244.180. Но это может быть разовый "провал".**
 
 ## 7. Какие DNS сервера отвечают за доменное имя dns.google? Какие A записи? воспользуйтесь утилитой dig
 
