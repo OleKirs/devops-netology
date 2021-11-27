@@ -278,6 +278,7 @@ root@vagrant:~# echo $?
 
 ## 20. Погасите тестовый хост, `vagrant destroy`.
 
+
 **Выполнено**
 
 ```powershell
@@ -287,7 +288,8 @@ vagrant@vagrant:~$ exit
 logout
 Connection to 127.0.0.1 closed.
 PS D:\VBox\VMs\DevOps2021> vagrant destroy
-    default: Are you sure you want to destroy the 'default' VM? [y/N] ==> default: Forcing shutdown of VM...
+    default: Are you sure you want to destroy the 'default' VM? [y/N] у
+==> default: Forcing shutdown of VM...
 ==> default: Destroying VM and associated drives..
 ```
 
