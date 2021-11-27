@@ -2,17 +2,8 @@
 
 ## 1. На лекции мы познакомились с [node_exporter](https://github.com/prometheus/node_exporter/releases). В демонстрации его исполняемый файл запускался в background. Этого достаточно для демо, но не для настоящей production-системы, где процессы должны находиться под внешним управлением. Используя знания из лекции по systemd, создайте самостоятельно простой [unit-файл](https://www.freedesktop.org/software/systemd/man/systemd.service.html) для node_exporter:
 
-* поместите его в автозагрузку,
 ```bash
-root@vagrant:~# systemctl enable node_exporter
-...
-         node_exporter.service - Node Exporter Service
-             Loaded: loaded (/etc/systemd/system/node_exporter.service; enabled; vendor preset: enabled)
-...
-```
-* предусмотрите возможность добавления опций к запускаемому процессу через внешний файл (посмотрите, например, на `systemctl cat cron`),
-```bash
-root@vagrant:~# cat /etc/systemd/system/node_exporter.service
+root@vagrant:~# cat > /etc/systemd/system/node_exporter.service
     [Unit]
     Description=Node Exporter Service
     After=network.target
@@ -29,9 +20,43 @@ root@vagrant:~# cat /etc/systemd/system/node_exporter.service
     [Install]
     WantedBy=multi-user.target
 
+```
+* поместите его в автозагрузку,
+```bash
+root@vagrant:~# systemctl enable node_exporter
+...
+         node_exporter.service - Node Exporter Service
+             Loaded: loaded (/etc/systemd/system/node_exporter.service; enabled; vendor preset: enabled)
+...
+```
+* предусмотрите возможность добавления опций к запускаемому процессу через внешний файл (посмотрите, например, на `systemctl cat cron`),
+
+**Создадим файл с описанием параметров запуска:** 
+
+```bash
 root@vagrant:~# cat /etc/node_exporter.cfg
     OPTIONS='--collector.systemd'
+```
+...
+**Отредактируем файл `/etc/systemd/system/node_exporter.service`:**
 
+```bash
+root@vagrant:~# nano /etc/systemd/system/node_exporter.service
+```
+
+**Добавим в секцию `Service` параметры для запуска и расположение файла с ними:**
+
+>    [Service]
+>    ...
+>    EnvironmentFile=/etc/node_exporter.cfg
+>    ExecStart=/usr/local/bin/node_exporter ${OPTIONS}
+>    ...
+
+**Перечитаем файлы конфигурации и перезапустим процесс `node_exporter`. После чего проверим состояние процесса. Видно, что процесс запущен с параметром `-collector.systemd` из файла `/etc/node_exporter.cfg`:**
+
+```bash
+root@vagrant:~# systemctl daemon-reload
+root@vagrant:~# systemctl restart node_exporter
 root@vagrant:~# systemctl status node_exporter
 ● node_exporter.service - Node Exporter Service
      Loaded: loaded (/etc/systemd/system/node_exporter.service; enabled; vendor preset: enabled)
@@ -77,7 +102,7 @@ root@vagrant:~# systemctl status node_exporter
 
 ## 2. Ознакомьтесь с опциями node_exporter и выводом `/metrics` по-умолчанию. Приведите несколько опций, которые вы бы выбрали для базового мониторинга хоста по CPU, памяти, диску и сети.
 
-Базовые метрики не очень удобны для мониторинга "руками". Но если использовать, то возможно есть смысл использовать эти метрики:
+**Базовые метрики не очень удобны для мониторинга "руками". Но если использовать, то возможно есть смысл использовать эти метрики:**
 
 **CPU (по каждому ядру):**
 
