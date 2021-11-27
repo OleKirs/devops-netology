@@ -21,7 +21,7 @@ HOST: stackoverflow.com
 
 * В ответе укажите полученный HTTP код, что он означает?
  
-**Ответ: получен код `301 Moved Permanently`, который означаетс что ресурс перемещён на постоянной основе (перманентный редирект) на новый адрес указанный в поле `location`**
+**Ответ: получен код `301 Moved Permanently`, который означает, что ресурс перемещён на постоянной основе (перманентный редирект) на новый адрес указанный в поле `location`**
 
 ```bash
 HTTP/1.1 301 Moved Permanently
@@ -52,10 +52,13 @@ Connection closed by foreign host.
 * найдите первый ответ HTTP сервера, откройте вкладку Headers
 * укажите в ответе полученный HTTP код.
 
-**IE11 возвращает ошибку 301 и не продолжает обработку (не срабатывает автопереход). Firefox и Chrome сразу переходят на HTTPS и начинают показывать историю с кода 200 "OK" на URL = https://stackoverflow.com/**
+**IE11 возвращает ошибку 301 и не продолжает обработку (не срабатывает автопереход).**
+
+**Firefox и Chrome сразу переходят на HTTPS (ошибка 301 даже не отображается в истории загрузки) и начинают показывать историю с кода 200 "OK" на URL = https://stackoverflow.com/**
 
 * проверьте время загрузки страницы, какой запрос обрабатывался дольше всего?
 Дольше всего (573 мс) обрабатывался запрос на загрузку самого документа:
+
 ```bash
 curl "https://stackoverflow.com/" ^
   -H "authority: stackoverflow.com" ^
@@ -72,6 +75,7 @@ curl "https://stackoverflow.com/" ^
   -H "accept-language: ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7" ^
   --compressed
 ```
+
 * приложите скриншот консоли браузера в ответ.
 
 ![Скриншот Google Chrome](https://github.com/OleKirs/devops-netology/blob/main/hw_03.6/hw_03.6-1.png "Скриншот Google Chrome")
@@ -85,8 +89,9 @@ root@vagrant:~# dig +short myip.opendns.com @resolver1.opendns.com
 
 ## 4. Какому провайдеру принадлежит ваш IP адрес? Какой автономной системе AS? Воспользуйтесь утилитой whois
 
-**Провайдер: `PSTAR-MNT` (North-West branch of OJSC MegaFon)**
-**Автономная система: `AS20632`**
+**Провайдер: `PSTAR-MNT` (North-West branch of OJSC MegaFon)**  
+  
+**Автономная система: `AS20632`**  
 
 ```bash
 root@vagrant:~# whois 195.144.231.174
@@ -162,7 +167,7 @@ source:         RIPE
 % This query was served by the RIPE Database Query Service version 1.101 (WAGYU)
 ```
 
-## 5. Через какие сети проходит пакет, отправленный с вашего компьютера на адрес 8.8.8.8? Через какие AS? Воспользуйтесь утилитой traceroute
+## 5. Через какие сети проходит пакет, отправленный с вашего компьютера на адрес 8.8.8.8? Через какие AS? Воспользуйтесь утилитой `traceroute`
 
 ```bash
 root@Deb10-Lab:~# traceroute -An 8.8.8.8
@@ -182,7 +187,7 @@ traceroute to 8.8.8.8 (8.8.8.8), 30 hops max, 60 byte packets
 
 ## 7. Какие DNS сервера отвечают за доменное имя dns.google? Какие A записи? воспользуйтесь утилитой dig
 
-### Какие DNS сервера отвечают за доменное имя dns.google?
+### Какие DNS сервера отвечают за доменное имя `dns.google`?
 
 ```bash
 root@vagrant:~# dig google.com NS +short
@@ -192,7 +197,7 @@ ns3.google.com.
 ns4.google.com.
 ```
 
-### Какие A записи?
+### Какие `A` записи?
 
 ```bash
 root@vagrant:~# dig google.com A +short
@@ -204,7 +209,7 @@ root@vagrant:~# dig google.com A +short
 173.194.222.139
 ```
 
-## 8. Проверьте PTR записи для IP адресов из задания 7. Какое доменное имя привязано к IP? воспользуйтесь утилитой dig
+## 8. Проверьте `PTR` записи для IP адресов из задания 7. Какое доменное имя привязано к IP? воспользуйтесь утилитой `dig`
 
 ```bash
 root@vagrant:~# dig +short -x 173.194.222.100
@@ -220,3 +225,5 @@ lo-in-f138.1e100.net.
 root@vagrant:~# dig +short -x 173.194.222.139
 lo-in-f139.1e100.net.
 ```
+
+___
