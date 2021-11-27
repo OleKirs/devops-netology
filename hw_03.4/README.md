@@ -180,9 +180,9 @@ root@vagrant:~# /sbin/sysctl -n fs.nr_open
 [Documentation for /proc/sys/fs/](https://www.kernel.org/doc/html/latest/admin-guide/sysctl/fs.html)
 
 
-**nr_open**
-
-*This denotes the maximum number of file-handles a process can allocate. Default value is 1024x1024 (1048576) which should be enough for most machines. Actual limit depends on RLIMIT_NOFILE resource limit.*
+>**nr_open**  
+>  
+>*This denotes the maximum number of file-handles a process can allocate. Default value is 1024x1024 (1048576) which should be enough for most machines. Actual limit depends on RLIMIT_NOFILE resource limit.*
 
 ***Какой другой существующий лимит не позволит достичь такого числа (`ulimit --help`)***
 
@@ -240,7 +240,51 @@ F S   UID     PID    PPID  C PRI  NI ADDR SZ WCHAN  TTY          TIME CMD
 0 R     0      54       2  0  80   0 -  2853 -      pts/0    00:00:00 ps
 ```
 
-## 7. Найдите информацию о том, что такое `:(){ :|:& };:`. Запустите эту команду в своей виртуальной машине Vagrant с Ubuntu 20.04 (**это важно, поведение в других ОС не проверялось**). Некоторое время все будет "плохо", после чего (минуты) – ОС должна стабилизироваться. Вызов `dmesg` расскажет, какой механизм помог автоматической стабилизации. Как настроен этот механизм по-умолчанию, и как изменить число процессов, которое можно создать в сессии?
+## 7. Найдите информацию о том, что такое `:(){ :|:& };:`. Запустите эту команду в своей виртуальной машине Vagrant с Ubuntu 20.04 (**это важно, поведение в других ОС не проверялось**). Некоторое время все будет "плохо", после чего (минуты) – ОС должна стабилизироваться. 
 
+***`:(){ :|:& };:` - Логическая бомба (известная также как "fork bomb"), забивающая память системы, что в итоге приводит к её зависанию.***  
 
+**Другая запись (не "односторочник"):**
 
+```bash
+    fncton() {
+        fncton | fncton &
+        };
+    fncton
+```
+**Этот код создаёт функцию, которая запускает два своих экземпляра, которые снова запускают эту функцию до тех пор, пока не закончится память.**  
+
+**Другие варианты "бомбы" на сайте Википедии:** [**Fork-бомба**](https://ru.wikipedia.org/wiki/Fork-%D0%B1%D0%BE%D0%BC%D0%B1%D0%B0)
+
+## Вызов `dmesg` расскажет, какой механизм помог автоматической стабилизации. 
+
+```bash
+vagrant@vagrant:~$ dmesg | grep fork
+[ 1655.040067] cgroup: fork rejected by pids controller in /user.slice/user-1000.slice/session-3.scope
+```
+
+## Как настроен этот механизм по-умолчанию, и как изменить число процессов, которое можно создать в сессии?
+
+**Управление максимальным количеством одновременно запущенных пользователем процессов выполняется командой `ulimit`:**
+
+```bash
+root@vagrant:/# ulimit --help
+...
+      -u        the maximum number of user processes
+...
+```
+
+**Определим значение по-умолчанию**
+
+```bash
+root@vagrant:/# ulimit -u
+3571
+```
+
+**Установим ограничение для пользователя в 1000 процессов:**
+
+```bash
+root@vagrant:/# ulimit -u 1000
+root@vagrant:/# ulimit -u
+1000
+```
