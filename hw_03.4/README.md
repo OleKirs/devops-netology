@@ -1,11 +1,13 @@
 ﻿# Домашнее задание к занятию "3.4. Операционные системы, лекция 2"
 
-## 1. На лекции мы познакомились с [node_exporter](https://github.com/prometheus/node_exporter/releases). В демонстрации его исполняемый файл запускался в background. Этого достаточно для демо, но не для настоящей production-системы, где процессы должны находиться под внешним управлением. Используя знания из лекции по systemd, создайте самостоятельно простой [unit-файл](https://www.freedesktop.org/software/systemd/man/systemd.service.html) для node_exporter:
+## 1. На лекции мы познакомились с [node_exporter](https://github.com/prometheus/node_exporter/releases). В демонстрации его исполняемый файл запускался в background. Этого достаточно для демо, но не для настоящей production-системы, где процессы должны находиться под внешним управлением. 
+
+### 1.1. Используя знания из лекции по systemd, создайте самостоятельно простой [unit-файл](https://www.freedesktop.org/software/systemd/man/systemd.service.html) для node_exporter:
 
 **UNIT-file:**
 
 ```bash
-root@vagrant:~# cat > /etc/systemd/system/node_exporter.service
+root@vagrant:~# cat > node_exporter.service
     [Unit]
     Description=Node Exporter Service
     After=network.target
@@ -23,9 +25,10 @@ root@vagrant:~# cat > /etc/systemd/system/node_exporter.service
 
 ```
 
-## поместите его в автозагрузку,
+### 1.2. поместите его в автозагрузку,
 
 ```bash
+root@vagrant:~# cp node_exporter.service /etc/systemd/system
 root@vagrant:~# systemctl enable node_exporter
 ...
          node_exporter.service - Node Exporter Service
@@ -41,7 +44,7 @@ root@vagrant:~# systemctl enable node_exporter
 root@vagrant:~# cat /etc/node_exporter.cfg
     OPTIONS='--collector.systemd'
 ```
-...
+
 **Отредактируем файл `/etc/systemd/system/node_exporter.service`:**
 
 ```bash
@@ -72,7 +75,7 @@ root@vagrant:~# systemctl status node_exporter
              └─3029 /usr/local/bin/node_exporter --collector.systemd
 ```
     
-## удостоверьтесь, что с помощью systemctl процесс корректно стартует, завершается, а после перезагрузки автоматически поднимается.
+### 1.3. Удостоверьтесь, что с помощью systemctl процесс корректно стартует, завершается, а после перезагрузки автоматически поднимается.
 
 **Проверено, процесс стартует после перезагрузки и управляется через `systemctl` корректно.**
 
