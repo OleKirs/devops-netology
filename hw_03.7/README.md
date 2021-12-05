@@ -1,7 +1,7 @@
 ﻿# Домашнее задание к занятию "3.7. Компьютерные сети, лекция 2"
 
 >**NB!**  
->Для корректного развёртывания ВМ в VirtualBox следует в Vagrantfile изменить `apt -y install nginx;` на `apt update && apt -y install nginx;` (сначала актуализировать базу данных по пакетам, а потом ставить `nginx`)**
+> *Для корректного развёртывания ВМ в VirtualBox следует в Vagrantfile изменить `apt -y install nginx;` на `apt update && apt -y install nginx;` (сначала актуализировать базу данных по пакетам, а потом ставить `nginx`)*
 
 ## 1. Проверьте список доступных сетевых интерфейсов на вашем компьютере. Какие команды есть для этого в Linux и в Windows?
 
@@ -181,7 +181,118 @@ Interface:    eth1, via: LLDP, RID: 1, Time: 0 day, 00:00:53
 
 ## 3. Какая технология используется для разделения L2 коммутатора на несколько виртуальных сетей? Какой пакет и команды есть в Linux для этого? Приведите пример конфига.
 
+### Какая технология используется для разделения L2 коммутатора на несколько виртуальных сетей?
+
+**Для разделения разделения L2 коммутатора на несколько виртуальных сетей в формате `Ethernet II` (протокол 802.3) может быть использована технология `VLAN` (Virtual Local Area Network), которая основана на загловках Eth-кадров рписанных в стандарте IEEE 802.1q) и её развитие, решающее проблему малого количества VLAN для больших развёртываний - `QnQ` (IEEE 802.1ad, "двойное тегирование в заголовке").**  
+
+**Есть и другие варианты мультиплексирования поверх L1, но, пожалуй, основной - это использование VLAN в Ethernet (802.1q)**
+
+### Какой пакет и команды есть в Linux для этого?
+
+**В Debian-like дистрибутивах раньше использовался пакет `vlan`, сейчас такой функционал добавлен в пакет `iproute`**
+Источник - [VLAN в Linux](http://xgu.ru/wiki/VLAN_%D0%B2_Linux)
+
+Конфигурацию можно задавать динамически, через команды `ip` пакета `iproute`, например:
+
+```bash
+root@vagrant:~# ip link add link eth0 name vl100 type vlan id 100
+root@vagrant:~# ip link show dev vl100
+6: vl100@eth0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN mode DEFAULT group default qlen 1000
+    link/ether 08:00:27:73:60:cf brd ff:ff:ff:ff:ff:ff
+root@vagrant:~# ip address add 172.31.0.5/12 brd + dev vl100
+root@vagrant:~# ip address show dev vl100
+6: vl100@eth0: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether 08:00:27:73:60:cf brd ff:ff:ff:ff:ff:ff
+    inet 172.31.0.5/12 brd 172.31.255.255 scope global vl100
+       valid_lft forever preferred_lft forever
+root@vagrant:~#  ip link del vl100
+root@vagrant:~# ip link show dev vl100
+Device "vl100" does not exist.
+```
+Для сохранения настроек сети при перезагрузках в настоящее время в Deb-like дистрибутивах сеть конфигурируется утилитой [`netplan`](https://netplan.io/):
+
+>Netplan is a utility for easily configuring networking on a linux system. You simply create a YAML description of the required network interfaces and what each should be configured to do. From this description Netplan will generate all the necessary configuration for your chosen renderer tool.
+
+### Приведите пример конфига
+
+Пример конфигурации с VLAN ID = 50 поверх `eth0`, статическим IP-адресом и маршрутом в сеть 192.168.0.0/16 через этот интерфейс.
+
+```bash
+root@netology1:/etc/netplan# cat /etc/netplan/01-netcfg.yaml
+network:
+  version: 2
+  ethernets:
+    eth0:
+      dhcp4: true
+  vlans:
+    vlan50:
+      id: 50
+      link: eth0
+      dhcp4: no
+      addresses: [192.168.1.2/24]
+      routes:
+          - to: 192.168.0.0/16
+            via: 192.168.1.1
+            on-link: true
+```
+
+Применим изменения и перезагрузим систему:
+
+```bash
+root@netology1:/etc/netplan# netplan apply
+root@netology1:/etc/netplan# reboot
+Connection to 127.0.0.1 closed by remote host.
+Connection to 127.0.0.1 closed.
+```
+
+Зайдём в систему по SSH:
+
+```powershell
+PS D:\VBox\VMs\DevOps2021\hv_03.7> vagrant ssh netology1
+Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 5.4.0-80-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+  System information as of Sun 05 Dec 2021 05:22:48 PM UTC
+
+  System load:  0.21              Processes:               121
+  Usage of /:   2.5% of 61.31GB   Users logged in:         0
+  Memory usage: 14%               IPv4 address for eth0:   10.0.2.15
+  Swap usage:   0%                IPv4 address for vlan50: 192.168.1.2
+
+
+This system is built by the Bento project by Chef Software
+More information can be found at https://github.com/chef/bento
+Last login: Sun Dec  5 15:36:56 2021 from 10.0.2.2
+```
+
+Проверим, что изменения сохранились (есть `vlan50@eth0`):
+
+```bash
+vagrant@vagrant:~$ sudo su -
+root@vagrant:~# ip -details link show dev vlan50
+4: vlan50@eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP mode DEFAULT group default qlen 1000
+    link/ether 08:00:27:73:60:cf brd ff:ff:ff:ff:ff:ff promiscuity 0 minmtu 0 maxmtu 65535
+    vlan protocol 802.1Q id 50 <REORDER_HDR> addrgenmode eui64 numtxqueues 1 numrxqueues 1 gso_max_size 65536 gso_max_segs 65535
+```
+
 ## 4. Какие типы агрегации интерфейсов есть в Linux? Какие опции есть для балансировки нагрузки? Приведите пример конфига.
+
+###  Какие типы агрегации интерфейсов есть в Linux?
+
+
+
+### Какие опции есть для балансировки нагрузки? 
+
+
+
+### Приведите пример конфига.
+
+```bash
+
+```
 
 ## 5. Сколько IP адресов в сети с маской /29 ? Сколько /29 подсетей можно получить из сети с маской /24. Приведите несколько примеров /29 подсетей внутри сети 10.10.10.0/24.
 
