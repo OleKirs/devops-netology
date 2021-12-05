@@ -397,9 +397,90 @@ Network:   10.10.10.96/29       00001010.00001010.00001010.01100 000
 
 ## 6. Задача: вас попросили организовать стык между 2-мя организациями. Диапазоны 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16 уже заняты. Из какой подсети допустимо взять частные IP адреса? Маску выберите из расчета максимум 40-50 хостов внутри подсети.
 
+Частные адреса можно взять из диапазана CGNAT - 100.64.0.0/10
+
 ## 7. Как проверить ARP таблицу в Linux, Windows? Как очистить ARP кеш полностью? Как из ARP таблицы удалить только один нужный IP?
 
 
+### 7.1. проверить ARP таблицу  
+
+**Linux:**  
+
+`ip neigh list`  
+
+```bash
+root@netology3:~# ip neigh list
+10.0.2.2 dev eth0 lladdr 52:54:00:12:35:02 REACHABLE
+172.28.128.10 dev eth1 lladdr ce:6f:47:14:cc:dd STALE
+172.28.128.60 dev eth1 lladdr 08:00:27:67:1c:b0 STALE
+10.0.2.3 dev eth0 lladdr 52:54:00:12:35:03 STALE
+```
+
+**Windows**  
+
+`arp -a`  
+
+```powershell
+PS C:\Users\Administrator> arp -a
+
+Interface: 192.168.56.1 --- 0x4
+  Internet Address      Physical Address      Type
+  192.168.56.255        ff-ff-ff-ff-ff-ff     static
+  224.0.0.22            01-00-5e-00-00-16     static
+  224.0.0.251           01-00-5e-00-00-fb     static
+  224.0.0.252           01-00-5e-00-00-fc     static
+  239.255.255.250       01-00-5e-7f-ff-fa     static
+```
+
+
+### 7.2. Как очистить ARP кеш полностью?
+
+**Linux:**  
+
+`ip neigh flush dev <DeviceName>`  
+
+```bash
+root@netology3:~# ip neigh flush dev eth1
+root@netology3:~#
+root@netology3:~# ip neigh show
+10.0.2.2 dev eth0 lladdr 52:54:00:12:35:02 REACHABLE
+10.0.2.3 dev eth0 lladdr 52:54:00:12:35:03 STALE
+```
+
+**Windows**  
+
+`arp -d *`  
+
+```powershell
+PS C:\Users\Administrator> arp -d *
+```
+
+## 7.3. Как из ARP таблицы удалить только один нужный IP?
+
+**Linux:**  
+
+`ip neigh del <IP-addr> dev <DeviceName>`  
+
+```bash
+root@netology3:~# ip neigh show
+10.0.2.2 dev eth0 lladdr 52:54:00:12:35:02 REACHABLE
+172.28.128.10 dev eth1 lladdr ce:6f:47:14:cc:dd STALE
+172.28.128.60 dev eth1 lladdr 08:00:27:67:1c:b0 STALE
+10.0.2.3 dev eth0 lladdr 52:54:00:12:35:03 STALE
+root@netology3:~# ip neigh del 172.28.128.10 dev eth1
+root@netology3:~# ip neigh show
+10.0.2.2 dev eth0 lladdr 52:54:00:12:35:02 REACHABLE
+172.28.128.60 dev eth1 lladdr 08:00:27:67:1c:b0 STALE
+10.0.2.3 dev eth0 lladdr 52:54:00:12:35:03 STALE
+```
+
+**Windows**  
+
+`arp -d <IP-addr>`
+
+```powershell
+PS C:\Users\Administrator> arp -d 192.168.0.1
+```
 
  ---
 ## Задание для самостоятельной отработки (необязательно к выполнению)
