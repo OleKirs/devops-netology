@@ -104,8 +104,137 @@ Connection closed by foreign host.
 
 ## 2. Создайте dummy0 интерфейс в Ubuntu. Добавьте несколько статических маршрутов. Проверьте таблицу маршрутизации.
 
-```bash
+Включим модуль ядра для `dummy` интерейсов и добавим в файл `/etc/modprobe.d/dummy.conf` запись для включения 2 dummy-интерфейсов при перезагрузке ОС
 
+```bash
+echo "dummy" >> /etc/modules
+echo "options dummy numdummies=2" > /etc/modprobe.d/dummy.conf
+```
+
+Настроим адресацию для Dummy-интрефейсов с использованием `networking.services`. Можно выполнить настройки и через другие менеджеры сети (Netplan и т.д.)
+
+```bash
+root@vagrant:~# cat /etc/network/interfaces.d/98-dummy0
+auto dummy0
+iface dummy0 inet static
+    address 10.2.2.2/32
+    pre-up ip link add dummy0 type dummy
+    post-down ip link del dummy0
+
+root@vagrant:~# cat /etc/network/interfaces.d/99-dummy1
+auto dummy1
+iface dummy1 inet static
+    address 10.2.2.3/32
+    pre-up ip link add dummy1 type dummy
+    post-down ip link del dummy1
+```
+
+Настроим таблицу маршрутизации для сети управления (номера таблиц можно выбирать в диапазоне {2..252}, чем выше номер, тем больше "вес" таблицы при выборе маршрута)
+
+```bash
+echo '200 mgmt' >> /etc/iproute2/rt_tables	
+```
+
+Настроим интерфейс управления для работы с созданной таблицей. Для этого создадим правила 'post-up' и 'pre-down', где пропишем команды `ip`, которые будут добавлять и удалять правила и маршруты в таблице 'mgmt' при включении и выключении интерфейса:
+
+```bash
+root@vagrant:~# cat /etc/network/interfaces.d/51-eth1
+auto eth1
+allow-hotplug eth1
+iface eth1 inet static
+  address 172.28.128.10
+  netmask 255.255.255.0
+  post-up ip route add 172.28.128.0/24 dev eth1 src 172.28.128.10 table mgmt
+  post-up ip route add default via 172.28.128.1 dev eth1 table mgmt
+  post-up ip rule add from 172.28.128.10/32 table mgmt
+  post-up ip rule add to 172.28.128.10/32 table mgmt
+  pre-down ip route del 172.28.128.0/24 dev eth1 src 172.28.128.10 table mgmt
+  pre-down ip route del default via 172.28.128.1 dev eth1 table mgmt
+  pre-down ip rule del from 172.28.128.10/32 table mgmt
+  pre-down ip rule del to 172.28.128.10/32 table mgmt
+```
+
+Перезагрузим ОС и проверим состояние интерфейсов:
+
+```bash
+root@vagrant:~# ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:73:60:cf brd ff:ff:ff:ff:ff:ff
+    inet 10.0.2.15/24 brd 10.0.2.255 scope global dynamic eth0
+       valid_lft 86262sec preferred_lft 86262sec
+    inet6 fe80::a00:27ff:fe73:60cf/64 scope link
+       valid_lft forever preferred_lft forever
+3: eth1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether 08:00:27:a5:86:8b brd ff:ff:ff:ff:ff:ff
+    inet 172.28.128.10/24 brd 172.28.128.255 scope global eth1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::a00:27ff:fea5:868b/64 scope link
+       valid_lft forever preferred_lft forever
+8: dummy0: <BROADCAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/ether 46:a4:76:81:eb:6f brd ff:ff:ff:ff:ff:ff
+    inet 10.2.2.2/32 brd 10.2.2.2 scope global dummy0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::44a4:76ff:fe81:eb6f/64 scope link
+       valid_lft forever preferred_lft forever
+9: dummy1: <BROADCAST,NOARP,UP,LOWER_UP> mtu 1500 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/ether 7e:b5:24:63:1c:68 brd ff:ff:ff:ff:ff:ff
+    inet 10.2.2.3/32 brd 10.2.2.3 scope global dummy1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::7cb5:24ff:fe63:1c68/64 scope link
+       valid_lft forever preferred_lft forever
+
+```
+
+Проверим правила маршрутизации. Видно, что пакеты приходящие и исходящие с адреса 172.28.128.10 будут обработаны в соответствии с таблицей `mgmt`:
+
+```bash
+root@vagrant:~# ip rule
+0:      from all lookup local
+32764:  from all to 172.28.128.10 lookup mgmt
+32765:  from 172.28.128.10 lookup mgmt
+32766:  from all lookup main
+32767:  from all lookup default
+```
+
+Добавим несколько временных статических маршрутов. Такие маршруты сбросятся при перезагрузке. Для их 'фиксации' можно воспользоваться менеджерами сети (например, отредактировать файлы конфигурации). Или добавлять скриптом при загрузке ОС и т.д.
+
+```bash 
+root@vagrant:~# ip route add 10.10.10.128/25 via 10.0.2.2 dev eth0
+root@vagrant:~# ip route add 10.100.0.0/20 via 10.0.2.2 dev eth0
+root@vagrant:~# ip route add 8.8.8.8 via 10.0.2.2 dev eth0 metric 50
+```
+
+Проверим маршруты в таблице по-умолчанию:
+
+```bash
+root@vagrant:~# ip route show
+default via 10.0.2.2 dev eth0
+default via 10.0.2.2 dev eth0 proto dhcp src 10.0.2.15 metric 100
+8.8.8.8 via 10.0.2.2 dev eth0 metric 50
+10.0.2.0/24 dev eth0 proto kernel scope link src 10.0.2.15
+10.0.2.2 dev eth0 proto dhcp scope link src 10.0.2.15 metric 100
+10.10.10.128/25 via 10.0.2.2 dev eth0
+10.100.0.0/20 via 10.0.2.2 dev eth0
+...
+
+```
+
+Добавим временный маршрут в таблицу `mgmt` и проверим его наличие в таблице:
+
+```bash
+root@vagrant:~# ip route add 172.16.0.0/12 via 172.28.128.1 dev eth1 table mgmt
+root@vagrant:~#
+root@vagrant:~# ip route show table mgmt
+default via 172.28.128.1 dev eth1
+172.16.0.0/12 via 172.28.128.1 dev eth1
+172.28.128.0/24 dev eth1 scope link src 172.28.128.10
+root@vagrant:~#
 ```
 
 ## 3. Проверьте открытые TCP порты в Ubuntu, какие протоколы и приложения используют эти порты? Приведите несколько примеров.
@@ -165,7 +294,7 @@ UNCONN                0                     0                                   
 
 ## 5. Используя diagrams.net, создайте L3 диаграмму вашей домашней сети или любой другой сети, с которой вы работали. 
 
-![**Диаграмма сети**](https://1.ru "Диаграмма сети")
+![**Диаграмма сети**](https://github.com/OleKirs/devops-netology/blob/hw_03.8/hw_03.8/hw_03.8_Dia.png "Диаграмма сети")
 
 ---
 ## Задание для самостоятельной отработки (необязательно к выполнению)
