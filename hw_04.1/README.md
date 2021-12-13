@@ -35,14 +35,18 @@ done
 
 Необходимо написать скрипт, который проверяет доступность трёх IP: `192.168.0.1`, `173.194.222.113`, `87.250.250.242` по `80` порту и записывает результат в файл `log`. Проверять доступность необходимо пять раз для каждого узла.
 
-### Ваш скрипт:
-```#!/usr/bin/env bash
+### Ваш скрипт:  
+
+```bash
+#!/usr/bin/env bash
 #Location: /root/test.sh
 #Version: v0.19 (2021-12-13)
 #Author: OleKirs (ok.****t@ya.ru)
 #Description: Проверяет по IP и порту с помощью CURL доступность узлов в сети несколько раз для каждого узла и записывает неудачные попытки в лог-файл.
 
-# Vars
+##########################################################################################################################################################
+# Variables
+
 logdir='/var/log/testcurl'                                    # set directory for logfile placement
 logfile=$logdir'/curl.log'									  # set logfile full name
 array_ip=( '127.0.0.1' '173.194.222.113' '87.250.250.242' ) # set ip addresses for testing
@@ -52,7 +56,9 @@ testdelay=1                                                   # Delay between te
 trycount=5                                                    # Number reply of test CURL request
 dtformat='%Y/%m/%d %H:%M:%S:'                                 # date format fot timestamp
 
+##########################################################################################################################################################
 # Functions
+
 testcurl()
   {
 
@@ -63,33 +69,38 @@ testcurl()
 	fi
   }
 
-# Check and create log directory and file
-if [ ! -d $logdir ]    # If no $logdir
+###########################################
+# Check and create log directory and file #
+###########################################
+
+if [ ! -d $logdir ]                                                    # If no $logdir
 then 
-  mkdir $logdir       # create $logdir
-  if [ $? -ne 0 ]; then echo "Can\`t create logdir" >&2; exit 50; fi # Check exit code from "mkdir"
+  mkdir $logdir                                                        # create $logdir
+  if [ $? -ne 0 ]; then echo "Can\`t create logdir" >&2; exit 50; fi   # Check exit code from "mkdir"
 fi
 
-if [ -e $logfile ]                                          # If $logfile exist?
+if [ -e $logfile ]                                                     # If $logfile exist?
 then
   logfiles=($(ls $logfile*)) # Get files like $logfile in working directory
-  tar -czvf $logfile.$(( ${#logfiles[@]} + 1 )).tar.gz curl.log >/dev/null # Archive old logs into tar.gz
-  if [ $? -ne 0 ]; then echo "Can\`t create arch from logfile" >&2; exit 51; fi # Check exit code from "tar", if exit code <> 0, then exit with error code 51
-  echo "$(date +"$dtformat") - Test start in $(pwd)" > $logfile  # Clear & send message to logfile
-  echo "Old log file is $logfile.$(( ${#logfiles[@]})).tar.gz" >> $logfile # Write name created arch in logfile
+  tar -czvf $logfile.$(( ${#logfiles[@]} + 1 )).tar.gz curl.log >/dev/null       # Archive old logs into tar.gz
+  if [ $? -ne 0 ]; then echo "Can\`t create arch from logfile" >&2; exit 51; fi  # Check exit code from "tar", if exit code <> 0, then exit with error code 51
+  echo "$(date +"$dtformat") - Test start in $(pwd)" > $logfile                  # Clear & send message to logfile
+  echo "Old log file is $logfile.$(( ${#logfiles[@]})).tar.gz" >> $logfile       # Write name created arch in logfile
 else
   touch $logfile > /dev/null   # Create empty logfile
   if [ $? -eq 0 ]              # If exit code equal zero?
-  then
-    echo "$(date +"$dtformat") - Log file created: $logfile" > $logfile  # Clear & send message to logfile
-	echo "$(date +"$dtformat") - Test start in $(pwd)" >> $logfile  # Clear & send message to logfile
-  else
-    echo "Can\`t create log file ($logfile)." >&2           # Write message to stderr
-    exit 52	                                                # Exit with error code 52
+    then
+      echo "$(date +"$dtformat") - Log file created: $logfile" > $logfile  # Clear & send message to logfile
+      echo "$(date +"$dtformat") - Test start in $(pwd)" >> $logfile       # Send another message to logfile
+    else
+      echo "Can\`t create log file ($logfile)." >&2           # Write message to stderr
+      exit 52	                                              # Exit with error code 52
   fi
 fi
 
-# Test ip addresses by curl
+#############################
+# Test ip addresses by curl #
+#############################
 
 while ((1==1))
 	do
@@ -99,11 +110,13 @@ while ((1==1))
 			do
 			  #echo "$ip, try num = $i"          # diagnostic operator, remove '#' to debag
 			  sleep $testdelay                   # delay between test CURL exec
-			  testcurl $protocol $ip $port       # Exec func `testcurl`
-			  if [ $? -eq 53 ]                   # If exit code from func equal 53
-			  then
+			  
+                          testcurl $protocol $ip $port       # Exec func `testcurl`
+			  
+                          if [ $? -eq 53 ]                   # If exit code from func equal 53
+			    then
 			  	  echo "$(date +"$dtformat") - Can\`t get pages from $ip" >> $logfile  # write log message with $ip to log-file
-	              echo "Can\`t get pages from $ip" >&2                                 # write message in stderr
+	                          echo "Can\`t get pages from $ip" >&2                                 # write message in stderr
 				  break                                                                # exit from cycle
 			  fi
 			done
@@ -186,9 +199,9 @@ while ((1==1))
 			  if [ $? -eq 53 ]                   # If exit code from func equal 53 
 ***Было***
 ```bash
-			  then
+			    then
 			  	  echo "$(date +"$dtformat") - Can\`t get pages from $ip" >> $logfile  # write log message with $ip to log-file
-	              echo "Can\`t get pages from $ip" >&2                                 # write message in stderr
+	                          echo "Can\`t get pages from $ip" >&2                                 # write message in stderr
 				  break                                                                # exit from cycle
 			  fi
 ```  
@@ -196,9 +209,9 @@ while ((1==1))
 ***Изменено на ***  
 (закомментирован `break`, добавлен выход с кодом ошибки `53`)
 ```bash
-			  then
+			    then
 			  	  echo "$(date +"$dtformat") - Can\`t get pages from $ip" >> $logfile  # write log message with $ip to log-file
-	              echo "Can\`t get pages from $ip" >&2                                 # write message in stderr
+                                  echo "Can\`t get pages from $ip" >&2                                 # write message in stderr
 				  #break                                                               # exit from cycle
 				  exit 53                                                              # End script with error code 53
 			  fi
