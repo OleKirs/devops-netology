@@ -44,20 +44,20 @@ done
 #Author: OleKirs (ok.****t@ya.ru)
 #Description: Проверяет по IP и порту с помощью CURL доступность узлов в сети несколько раз для каждого узла и записывает неудачные попытки в лог-файл.
 
-##########################################################################################################################################################
-# Variables
+###############################
+#         Variables           #
 
 logdir='/var/log/testcurl'                                    # set directory for logfile placement
-logfile=$logdir'/curl.log'									  # set logfile full name
-array_ip=( '127.0.0.1' '173.194.222.113' '87.250.250.242' ) # set ip addresses for testing
+logfile=$logdir'/curl.log'                                    # set logfile full name
+array_ip=( '127.0.0.1' '173.194.222.113' '87.250.250.242' )   # set ip addresses for testing
 port=80                                                       # TCP port for test
 protocol='http'                                               # protocol for CURL testing
 testdelay=1                                                   # Delay between test retry
 trycount=5                                                    # Number reply of test CURL request
 dtformat='%Y/%m/%d %H:%M:%S:'                                 # date format fot timestamp
 
-##########################################################################################################################################################
-# Functions
+################################
+#          Functions           #
 
 testcurl()
   {
