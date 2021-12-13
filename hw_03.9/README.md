@@ -160,11 +160,123 @@ $ curl https://netology1.netology.test:8443 --insecure
 
 ## 4. Проверьте на TLS уязвимости произвольный сайт в интернете.
 
+Выполнено на примере сайта "https://www.hackthissite.org/":
 
+```bash
+root@netology1:~/testssl/testssl.sh# ./testssl.sh -e --fast --parallel https://www.hackthissite.org/
+
+###########################################################
+    testssl.sh       3.1dev from https://testssl.sh/dev/
+    (6da72bc 2021-12-10 20:16:28 -- )
+
+      This program is free software. Distribution and
+             modification under GPLv2 permitted.
+      USAGE w/o ANY WARRANTY. USE IT AT YOUR OWN RISK!
+
+       Please file bugs @ https://testssl.sh/bugs/
+
+###########################################################
+
+ Using "OpenSSL 1.0.2-chacha (1.0.2k-dev)" [~183 ciphers]
+ on netology1:./bin/openssl.Linux.x86_64
+ (built: "Jan 18 17:12:17 2019", platform: "linux-x86_64")
+
+
+Testing all IPv4 addresses (port 443): 137.74.187.104 137.74.187.100 137.74.187.102 137.74.187.101 137.74.187.103
+-----------------------------------------------------------------------------------------------------------------------------------------
+ Start 2021-12-13 09:43:13        -->> 137.74.187.104:443 (www.hackthissite.org) <<--
+
+ Further IP addresses:   137.74.187.100 137.74.187.102 137.74.187.101 137.74.187.103 2001:41d0:8:ccd8:137:74:187:103 2001:41d0:8:ccd8:137:74:187:102 2001:41d0:8:ccd8:137:74:187:101
+                         2001:41d0:8:ccd8:137:74:187:104 2001:41d0:8:ccd8:137:74:187:100
+ rDNS (137.74.187.104):  hackthissite.org.
+ Service detected:       HTTP
+
+
+
+ Testing all 183 locally available ciphers against the server, ordered by encryption strength
+
+
+Hexcode  Cipher Suite Name (OpenSSL)       KeyExch.   Encryption  Bits     Cipher Suite Name (IANA/RFC)
+-----------------------------------------------------------------------------------------------------------------------------
+ xc030   ECDHE-RSA-AES256-GCM-SHA384       ECDH 256   AESGCM      256      TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+ xc028   ECDHE-RSA-AES256-SHA384           ECDH 256   AES         256      TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
+ x9d     AES256-GCM-SHA384                 RSA        AESGCM      256      TLS_RSA_WITH_AES_256_GCM_SHA384
+ x3d     AES256-SHA256                     RSA        AES         256      TLS_RSA_WITH_AES_256_CBC_SHA256
+ xc02f   ECDHE-RSA-AES128-GCM-SHA256       ECDH 256   AESGCM      128      TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+ xc027   ECDHE-RSA-AES128-SHA256           ECDH 256   AES         128      TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+ x9c     AES128-GCM-SHA256                 RSA        AESGCM      128      TLS_RSA_WITH_AES_128_GCM_SHA256
+ x3c     AES128-SHA256                     RSA        AES         128      TLS_RSA_WITH_AES_128_CBC_SHA256
+
+
+ Done 2021-12-13 09:43:20 [  12s] -->> 137.74.187.104:443 (www.hackthissite.org) <<--
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+ Start 2021-12-13 09:43:20        -->> 137.74.187.100:443 (www.hackthissite.org) <<--
+
+ Further IP addresses:   137.74.187.104 137.74.187.102 137.74.187.101 137.74.187.103 2001:41d0:8:ccd8:137:74:187:103 2001:41d0:8:ccd8:137:74:187:102 2001:41d0:8:ccd8:137:74:187:101
+                         2001:41d0:8:ccd8:137:74:187:104 2001:41d0:8:ccd8:137:74:187:100
+ rDNS (137.74.187.100):  hackthissite.org.
+ Service detected:       HTTP
+
+
+
+...
+
+
+ Done 2021-12-13 09:43:51 [  43s] -->> 137.74.187.103:443 (www.hackthissite.org) <<--
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+Done testing now all IP addresses (on port 443): 137.74.187.104 137.74.187.100 137.74.187.102 137.74.187.101 137.74.187.103
+```
 
 ## 5. Установите на Ubuntu ssh сервер, сгенерируйте новый приватный ключ. Скопируйте свой публичный ключ на другой сервер. Подключитесь к серверу по SSH-ключу.
 
+### 5.1. Установите на Ubuntu ssh сервер, сгенерируйте новый приватный ключ.
 
+```bash
+root@netology1:~/testssl/testssl.sh# apt install openssh-server
+Reading package lists... Done
+Building dependency tree
+Reading state information... Done
+The following additional packages will be installed:
+  openssh-client openssh-sftp-server
+...
+
+root@netology1:~/testssl/testssl.sh# ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa):
+...
+
+root@netology1:~# ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa): /root/.ssh/id_rsa_v2
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /root/.ssh/id_rsa_v2
+Your public key has been saved in /root/.ssh/id_rsa_v2.pub
+The key fingerprint is:
+SHA256:byuQavvL+iYqILGhxNJJWlw4DiO7BPVnvUw4iqF0hDQ root@netology1.netology.test
+The key's randomart image is:
++---[RSA 3072]----+
+|.Eo+.            |
+|=.O.   o         |
+|+@.+. = o        |
+|B==o + + .       |
+|*=. .  .S        |
+|*     o  .       |
+|o    . .  o      |
+|.   +.. .. .     |
+| ..ooB=. ..      |
++----[SHA256]-----+
+root@netology1:~# 
+```
+
+### 5.2. Скопируйте свой публичный ключ на другой сервер. Подключитесь к серверу по SSH-ключу.
+ 
+```bash
+
+
+```
  
 ## 6. Переименуйте файлы ключей из задания 5. Настройте файл конфигурации SSH клиента, так чтобы вход на удаленный сервер осуществлялся по имени сервера.
 
@@ -172,6 +284,19 @@ $ curl https://netology1.netology.test:8443 --insecure
 
 ## 7. Соберите дамп трафика утилитой tcpdump в формате pcap, 100 пакетов. Откройте файл pcap в Wireshark.
 
+### 7.1. Соберите дамп трафика утилитой tcpdump в формате pcap, 100 пакетов.
+```bash
+root@netology1:~# tcpdump -i eth0 -c 100 -w dump_eth0.pcap
+tcpdump: listening on eth0, link-type EN10MB (Ethernet), capture size 262144 bytes
+100 packets captured
+100 packets received by filter
+0 packets dropped by kernel
+root@netology1:~#
+```
+
+### 7.2. Откройте файл pcap в Wireshark.
+
+![Файл `dump_eth0.pcap`, открытый в Wireshark](imgs/hw_03.9_pic_07.png "Файл `dump_eth0.pcap`, открытый в Wireshark")  
 
 
  ---
