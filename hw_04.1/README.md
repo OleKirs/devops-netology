@@ -49,7 +49,7 @@ done
 
 logdir='/var/log/testcurl'                                    # set directory for logfile placement
 logfile=$logdir'/curl.log'                                    # set logfile full name
-array_ip=( '127.0.0.1' '173.194.222.113' '87.250.250.242' )   # set ip addresses for testing
+array_ip=( '192.168.0.1' '173.194.222.113' '87.250.250.242' ) # set ip addresses for testing
 port=80                                                       # TCP port for test
 protocol='http'                                               # protocol for CURL testing
 testdelay=1                                                   # Delay between test retry
@@ -62,7 +62,7 @@ dtformat='%Y/%m/%d %H:%M:%S:'                                 # date format fot 
 testcurl()
   {
 
-	curl -I -o /dev/null $1://$2:$3 > /dev/null 2>&1    # get page from $ip address port 80 by protocol http
+	curl -I -o /dev/null $1://$2:$3 > /dev/null 2>&1    # get page from $1 address port $2 by protocol $3
 	if (($? != 0))                                      # If exit code not equal zero?
 	then
 	  return 53                                         # exit from func with error code 53
