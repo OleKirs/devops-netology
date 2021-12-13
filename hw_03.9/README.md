@@ -273,35 +273,47 @@ root@netology1:~#
 
 ### 5.2. Скопируйте свой публичный ключ на другой сервер. Подключитесь к серверу по SSH-ключу.
 
-Скопируем ключ с помощью команды `ssh-copy-id` и подключимся без ввода пароля (с помощью ключа):  
+Скопируем ключ с помощью команды `ssh-copy-id` и подключимся без ввода пароля (с помощью ключа), указав для подключения имя пользователя и имя сервера:  
 
 ```bash
-$ ssh-copy-id -f -p 2222 vagrant@127.0.0.1
-/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/c/Users/Administrator/.ssh/id_rsa.pub"
+root@netology1:~/.ssh# ssh-copy-id vagrant@netology2
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "/root/.ssh/id_rsa.pub"
+/usr/bin/ssh-copy-id: ERROR: Too many arguments.  Expecting a target hostname, got: 'vagrant@netology2' 'id_rsa.pub'
+
+Usage: /usr/bin/ssh-copy-id [-h|-?|-f|-n] [-i [identity_file]] [-p port] [[-o <ssh -o options>] ...] [user@]hostname
+        -f: force mode -- copy keys without trying to check if they are already installed
+        -n: dry run    -- no keys are actually copied
+        -h|-?: print this help
+root@netology1:~/.ssh# ssh-copy-id -i id_rsa.pub  vagrant@netology2
+/usr/bin/ssh-copy-id: INFO: Source of key(s) to be installed: "id_rsa.pub"
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+vagrant@netology2's password:
 
 Number of key(s) added: 1
 
-Now try logging into the machine, with:   "ssh -p '2222' 'vagrant@127.0.0.1'"
+Now try logging into the machine, with:   "ssh 'vagrant@netology2'"
 and check to make sure that only the key(s) you wanted were added.
-$ ssh -p '2222' 'vagrant@127.0.0.1'
+
+root@netology1:~/.ssh# ssh vagrant@netology2
 Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 5.4.0-80-generic x86_64)
 
  * Documentation:  https://help.ubuntu.com
  * Management:     https://landscape.canonical.com
  * Support:        https://ubuntu.com/advantage
 
-  System information as of Mon 13 Dec 2021 10:26:15 AM UTC
+  System information as of Mon 13 Dec 2021 10:47:05 AM UTC
 
-  System load:  0.0               Processes:             123
-  Usage of /:   2.5% of 61.31GB   Users logged in:       2
-  Memory usage: 19%               IPv4 address for eth0: 10.0.2.15
-  Swap usage:   0%
+  System load:  0.0               Processes:             112
+  Usage of /:   2.5% of 61.31GB   Users logged in:       1
+  Memory usage: 16%               IPv4 address for eth0: 10.0.2.15
+  Swap usage:   0%                IPv4 address for eth1: 172.28.128.60
 
 
 This system is built by the Bento project by Chef Software
 More information can be found at https://github.com/chef/bento
-Last login: Mon Dec 13 09:58:47 2021 from 10.0.2.2
-vagrant@netology1:~$
+Last login: Mon Dec 13 10:41:53 2021 from 10.0.2.2
+vagrant@netology2:~$ 
 ```
  
 ## 6. Переименуйте файлы ключей из задания 5. Настройте файл конфигурации SSH клиента, так чтобы вход на удаленный сервер осуществлялся по имени сервера.
@@ -309,7 +321,8 @@ vagrant@netology1:~$
 ### 6.1. Переименуйте файлы ключей из задания 5.
 
 ```bash
-mv ~/.ssh/id_rsa ~/.ssh/id_rsa_v2
+cp ~/.ssh/id_rsa ~/.ssh/id_rsa_v2
+cp ~/.ssh/id_rsa.pub ~/.ssh/id_rsa_v2.pub
 ```
 
 ### 6.2. Настройте файл конфигурации SSH клиента, так чтобы вход на удаленный сервер осуществлялся по имени сервера.
