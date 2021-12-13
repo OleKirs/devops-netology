@@ -132,7 +132,7 @@ establish a secure connection to it. To learn more about this situation and
 how to fix it, please visit the web page mentioned above.
 ```
 
-Повторим с ключом `--insecure`, для игнорирования ошибки. Докуент с сервера Apache получен:  
+Повторим с ключом `--insecure`, для игнорирования ошибки. Документ с сервера Apache получен:  
 
 ```bash
 Administrator@TESTHOST51 MINGW64 /
@@ -151,6 +151,12 @@ $ curl https://netology1.netology.test:8443 --insecure
     ...
 </html>
 ```
+
+Проверим в браузере:
+
+![Проверка доступности web-документа в браузере](imgs/hw_03.9_pic_03.png "Проверка доступности web-документа в браузере")  
+
+Видно, что документ доступен после добавления его в исключения проверки безопасности соединения из-за самоподписанного сертификата.
 
 ## 4. Проверьте на TLS уязвимости произвольный сайт в интернете.
 
