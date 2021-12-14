@@ -42,11 +42,13 @@ done
 #Location: /root/test.sh
 #Version: v0.19 (2021-12-13)
 #Author: OleKirs (ok.****t@ya.ru)
-#Description: Проверяет по IP и порту с помощью CURL доступность узлов в сети несколько раз для каждого узла и записывает неудачные попытки в лог-файл.
+#Description: 
+#  Проверяет по IP и порту с помощью CURL доступность узлов в сети несколько раз для каждого узла
+#  и записывает неудачные попытки в лог-файл.
 
-###############################
-#         Variables           #
-
+###########################################
+#              Variables                  #
+###########################################
 logdir='/var/log/testcurl'                                    # set directory for logfile placement
 logfile=$logdir'/curl.log'                                    # set logfile full name
 array_ip=( '192.168.0.1' '173.194.222.113' '87.250.250.242' ) # set ip addresses for testing
@@ -56,13 +58,14 @@ testdelay=1                                                   # Delay between te
 trycount=5                                                    # Number reply of test CURL request
 dtformat='%Y/%m/%d %H:%M:%S:'                                 # date format fot timestamp
 
-################################
-#          Functions           #
 
+###########################################
+#              Functions                  #
+###########################################
 testcurl()
   {
 
-	curl -I -o /dev/null $1://$2:$3 > /dev/null 2>&1    # get page from $1 address port $2 by protocol $3
+	curl -I $1://$2:$3 &> /dev/null                     # get page from $1 address port $2 by protocol $3
 	if (($? != 0))                                      # If exit code not equal zero?
 	then
 	  return 53                                         # exit from func with error code 53
@@ -99,13 +102,14 @@ if [ -e $logfile ]                                                            # 
     fi
 fi
 
-#############################
-# Test ip addresses by curl #
-#############################
+
+###########################################
+#        Test ip addresses by curl        #
+###########################################
 
 while ((1==1))
   do
-    for ip in ${array_ip[@]}  # for every ip address in $array_ip
+    for ip in ${array_ip[@]}                                         # for every ip address in $array_ip
       do
 	for ((i=1; i <= $trycount ; i++))
 	  do
@@ -118,8 +122,7 @@ while ((1==1))
             if [ $? -eq 53 ]                                         # If exit code from func equal 53
               then
                 echo "$(date +"$dtformat") - Can\`t get pages from $ip" >> $logfile  # write log message with $ip to log-file
-	        echo "Can\`t get pages from $ip" >&2                                 # write message in stderr
-		break                                                                # exit from cycle
+                break                                                # break this cycle
             fi
           done
       done
@@ -127,7 +130,7 @@ while ((1==1))
 
 exit 0
  
-# EOF 
+# EOF  
 ```
 
 Проверка:
@@ -183,10 +186,11 @@ drwxrwxr-x 8 root syslog 4096 Dec 13 20:03 ..
 
 ### Ваш скрипт:
 
-Установим и настроим на локальном узле тестовый web-сервер Apache2.  
-Изменим целевые узлы с `array_ip=( '192.168.0.1' '173.194.222.113' '87.250.250.242' )` на `array_ip=( '127.0.0.1' '173.194.222.113' '87.250.250.242' )`  
+* Установим и настроим на локальном узле тестовый web-сервер Apache2. 
+* Изменим целевые узлы с `array_ip=( '192.168.0.1' '173.194.222.113' '87.250.250.242' )` на `array_ip=( '127.0.0.1' '173.194.222.113' '87.250.250.242' )`  
 
-Изменим строки в области проверки CURL
+* Изменим строки в условии проверки exit code функции `testcurl`:  
+
 ```bash
 # Test ip addresses by curl
 while ((1==1))
@@ -209,24 +213,23 @@ while ((1==1))
 ```bash
               then
                 echo "$(date +"$dtformat") - Can\`t get pages from $ip" >> $logfile  # write log message with $ip to log-file
-	        echo "Can\`t get pages from $ip" >&2                                 # write message in stderr
-		break                                                                # exit from cycle
+                break                                                                # exit from cycle
             fi
 ```  
 
 ***Изменено на***  
-**(закомментирован `break`, добавлен выход с кодом ошибки `53`)**  
+**(закомментирован `break`, добавлены зыапись в канал `stderr` и выход с кодом ошибки `53`)**  
 
 ```bash
               then
                 echo "$(date +"$dtformat") - Can\`t get pages from $ip" >> $logfile  # write log message with $ip to log-file
-	        echo "Can\`t get pages from $ip" >&2                                 # write message in stderr
-		#break                                                               # exit from cycle
+                #break                                                               # exit from cycle
+                echo "Can\`t get pages from $ip" >&2                                 # write message in stderr
                 exit 53                                                              # End script with error code 53
             fi
 ``` 
 
-И закроем циклы:  
+***И закроем циклы:***  
 
 ```bash
           done
