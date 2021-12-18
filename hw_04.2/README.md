@@ -39,12 +39,29 @@ for result in result_os.split('\n'):
 
 ### Ваш скрипт:
 ```python
-???
+#!/usr/bin/env python3
+
+import os
+
+bash_command = ["cd ~/netology/sysadm-homeworks", "git status"] # зададим список команд для получения статуса GIT 
+result_os = os.popen(' && '.join(bash_command)).read() # Выполним команды и запишем результат выполнения в переменную result_os
+cwd = os.getcwd() # Получим путь к текущему каталогу и поместим его в переменную cwd (current working dir)
+# is_change = False # Не используемая переменная, можно убрать.
+for result in result_os.split('\n'): # Для каждого элемента с разделителем \n выполним:
+    if result.find('modified') != -1: # Если 'modified' найдено, то:
+        prepare_result = result.replace('\tmodified:   ', cwd) # Записать в переменную prepare_result результат из result Заменив '\tmodified' на полный путь (из cwd)
+        print(prepare_result) # Вывести значение  prepare_result
+#        break # Лишнее, т.к. прерывает обработку на первой итерации
+
 ```
 
 ### Вывод скрипта при запуске при тестировании:
-```
-???
+```bash
+vagrant@netology1:~/netology/sysadm-homeworks$ python3 ~/hw_04.2.1.py
+/home/vagrant/netology/sysadm-homeworks01-intro-01/README.md
+/home/vagrant/netology/sysadm-homeworks02-git-01-vcs/README.md
+/home/vagrant/netology/sysadm-homeworksREADME.md
+
 ```
 
 ## Обязательная задача 3
