@@ -144,12 +144,77 @@ vagrant@netology1:~$ python3 ~/hw_04.2.3.py ~/netology/sysadm-homeworks/01-intro
 
 ### Ваш скрипт:
 ```python
-???
+#!/usr/bin/env python3
+import socket
+import time
+from datetime import datetime, timezone, timedelta
+
+# VARS:
+# Список серверов:
+hosts = {
+    'drive.google.com': '8.8.8.8',
+    'mail.google.com': '8.8.8.8',
+    'google.com': '8.8.8.8'
+    }
+# Задержка между проверками (в секундах):
+test_delay = 5
+# Смещение от UTC для корректного отображения локального времени в Timestamp:
+timezone_offset = 3.0  # MSK Time (UTC+03:00)
+
+# MAIN
+try:
+    tzinfo = timezone(timedelta(hours=timezone_offset))    # Установим TZ
+    
+    # Вывод стартовой информации и заголовков 
+    print('\n*******************************\nStart host settings:\n')
+    print(str(hosts).replace('{', '').replace('}', '').replace(', ', '\n'))
+    print('\n*******************************\nBegin host ip-address testing:\n')
+
+    while 1 == 1:
+        for host in hosts:                         # Для каждого host из hosts
+            ip = socket.gethostbyname(host)        # Получить IP-адрес и записать в "ip"
+
+            if ip != hosts[host]:                  # Если "ip" отличается от значения в словаре "hosts"
+                                                   # Вывести информацию об ошибке в 'stdout'
+                print(str(datetime.now(tzinfo).strftime("%Y-%m-%d %H:%M:%S")) + ' [ERROR] ' + str(host)
+                      + ' IP mistmatch: ' + hosts[host] + ' ' + ip)
+
+                hosts[host] = ip                   # Присвоить значение "ip" ключу 'host' в словаре "hosts"
+
+        time.sleep(test_delay)                     # Пауза между проверками на величину "test_delay" сек.
+       
+except KeyboardInterrupt                           # Обработка нажатия Ctrl-C при работе скрипта.
+  print(" Keyboard Interrupt by \'Ctrl-C\'")
+  exit(50)
+
+exit(0)
+# EOF
+
 ```
 
 ### Вывод скрипта при запуске при тестировании:
 ```
-???
+vagrant@netology1:~$ python3 ~/hw_04.2.4.py
+
+*******************************
+Start host settings:
+
+'drive.google.com': '8.8.8.8'
+'mail.google.com': '8.8.8.8'
+'google.com': '8.8.8.8'
+
+*******************************
+Begin host ip-address testing:
+
+2021-12-18 21:52:42 [ERROR] drive.google.com IP mistmatch: 8.8.8.8 173.194.220.194
+2021-12-18 21:52:42 [ERROR] mail.google.com IP mistmatch: 8.8.8.8 142.250.201.69
+2021-12-18 21:52:42 [ERROR] google.com IP mistmatch: 8.8.8.8 209.85.233.100
+2021-12-18 21:52:47 [ERROR] google.com IP mistmatch: 209.85.233.100 209.85.233.102
+2021-12-18 21:55:38 [ERROR] mail.google.com IP mistmatch: 142.250.201.69 74.125.131.19
+2021-12-18 21:55:43 [ERROR] mail.google.com IP mistmatch: 74.125.131.19 74.125.131.83
+^C Keyboard Interrupt by 'Ctrl-C'
+vagrant@netology1:~$
+
 ```
 
 ## Дополнительное задание (со звездочкой*) - необязательно к выполнению
