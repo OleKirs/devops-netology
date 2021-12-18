@@ -69,12 +69,60 @@ vagrant@netology1:~/netology/sysadm-homeworks$ python3 ~/hw_04.2.1.py
 
 ### Ваш скрипт:
 ```python
-???
+#!/usr/bin/env python3
+import os
+import sys
+
+if len(sys.argv) > 1:
+
+    cmd1 = "/usr/bin/git -C " + sys.argv[1] + " rev-parse --show-toplevel"
+
+    cwd = (os.popen(cmd1).read()).replace('\n','/')
+
+    if cwd.find('fatal') != -1:
+        print(cwd)
+        exit(50)
+
+else:
+    cwd = os.getcwd()
+
+bash_command = "/usr/bin/git -C " + str(cwd) + " status"
+result_os = os.popen(bash_command).read()
+
+for result in result_os.split('\n'):
+    if result.find('modified') != -1:
+        prepare_result = result.replace('\tmodified:   ', str(cwd))
+        print(prepare_result)
+
+# EOF
+
 ```
 
 ### Вывод скрипта при запуске при тестировании:
-```
-???
+```bash
+# Перейдём в домашний каталог пользователя, в котором нет репозиториев и запустим скрипт без аргументов: 
+vagrant@netology1:~$ cd 
+vagrant@netology1:~$ python3 ~/hw_04.2.3.py
+fatal: not a git repository (or any of the parent directories): .git
+
+# Запустим скрипт, указав в аргументе каталог, в который у пользователя нет доступа (/root)
+vagrant@netology1:~$ python3 ~/hw_04.2.3.py /root/
+fatal: cannot change to '/root/': Permission denied
+fatal: cannot change to 'status': No such file or directory
+
+# Запустим скрипт, указав в аргументе корневой каталог репозитория "sysadm-homeworks"
+vagrant@netology1:~$ python3 ~/hw_04.2.3.py ~/netology/sysadm-homeworks/
+/home/vagrant/netology/sysadm-homeworks/01-intro-01/README.md
+/home/vagrant/netology/sysadm-homeworks/02-git-01-vcs/README.md
+/home/vagrant/netology/sysadm-homeworks/README.md
+
+
+# Запустим скрипт, указав в аргументе дочерний каталог в репозитории "sysadm-homeworks"
+vagrant@netology1:~$ python3 ~/hw_04.2.3.py ~/netology/sysadm-homeworks/01-intro-01/
+/home/vagrant/netology/sysadm-homeworks/01-intro-01/README.md
+/home/vagrant/netology/sysadm-homeworks/02-git-01-vcs/README.md
+/home/vagrant/netology/sysadm-homeworks/README.md
+
 ```
 
 ## Обязательная задача 4
