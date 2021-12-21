@@ -1,6 +1,8 @@
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from time import sleep
+
 # Variables
 # Список сервисов:
 
@@ -23,17 +25,17 @@ services_conf_file_prefix = "checked_services"
 class TestedService:
     """ Проверяемый сервис """
 
-    def __init__(self, name: str, srvaddr):  # Свойства класса
+    def __init__(self, name: str, srv_address):  # Свойства класса
         self.__name = name
-        self.__srvaddress = srvaddr
+        self.__srv_address = srv_address
 
-    def changeip(self):  # Метод для проверки изменеия IP-адреса объекта
+    def change_ip(self):  # Метод для проверки изменения IP-адреса объекта
 
         from socket import gethostbyname
 
         ip = gethostbyname(self.__name)
 
-        if ip != self.__srvaddress:
+        if ip != self.__srv_address:
             return [True, ip]
         else:
             return [False, ip]
@@ -49,84 +51,88 @@ def print_head(services_name_n_ip: dict):
     print('\n*******************************\nBegin host ip-address testing:\n')
 
 
-def print_error(host: str, host_old_ip, host_new_ip, tz_offset: float):
+def print_error(srv_host: str, host_old_ip, host_new_ip, time_zone_offset: float):
     """
     Выводит в stdout сообщение об ошибке
-    :param host: Имя сервиса
+    :param srv_host: Имя сервиса
     :param host_old_ip: Старое значение IP
     :param host_new_ip: Новое значение IP
-    :param tz_offset: Смещение локального времени от UTC
+    :param time_zone_offset: Смещение локального времени от UTC
     """
 
     from datetime import datetime, timezone, timedelta
 
-    tzinfo = timezone(timedelta(hours=tz_offset))  # Записать в `tzinfo` информацию о временной зоне.
+    time_zone_info = timezone(timedelta(hours=time_zone_offset))  # Записать в `time_zone_info` инф-ю о временной зоне.
 
-    print(str(datetime.now(tzinfo).strftime("%Y-%m-%d %H:%M:%S")) + ' [ERROR] ' + str(host)
-          + ' IP mistmatch: ' + host_old_ip + ' ' + host_new_ip)  # Вывести сообщение об "ошибке" в `stdout`
+    print(str(datetime.now(time_zone_info).strftime("%Y-%m-%d %H:%M:%S")) + ' [ERROR] ' + str(srv_host)
+          + ' IP mismatch: ' + host_old_ip + ' ' + host_new_ip)  # Вывести сообщение об "ошибке" в `stdout`
 
 
-def check_services_working_dir(services_working_dir: str):
+def check_services_working_dir(checking_dir: str):
     """
-    Процедура проверки и создания рабочего каталога
-    :param services_working_dir: Путь к рабочему каталогу.
+    Процедура проверки и создания рабочего каталога.
+    :param checking_dir: Путь к проверяемому каталогу.
     """
 
     from pathlib import Path
 
     try:
-        p = Path(services_working_dir)
+        p = Path(checking_dir)
         if not p.exists():
             p.mkdir()
     except FileExistsError as fe:  # Если каталог уже есть, то записать и продолжить работу.
-        print(f'Warning: Directory already exist  {services_working_dir}', {fe})
+        print(f'Warning: Directory already exist  {checking_dir}', {fe})
 
     except OSError as oe:  # Если другие ошибки доступа -> EXIT (51).
-        print(f'Error: Creating directory. {services_working_dir}', {oe})
+        print(f'Error: Creating directory. {checking_dir}', {oe})
         exit(51)
 
 
-def export_to_json(services_working_dir: str, services_conf_file_prefix: str, service: str, serviceip):
+def export_to_json(working_dir: str, conf_file_prefix: str, service: str, service_ip):
     """
-    Процедура выгрузки (десериализации) словарей в JSON
-    :param services_working_dir: Путь к раабочему каталогу
-    :param services_conf_file_prefix: Префикс имени файла конфига для всех "сервисов"
+    Процедура выгрузки (сериализации) словарей в JSON
+    :param working_dir: Путь к рабочему каталогу
+    :param conf_file_prefix: Префикс имени файла конфига для всех "сервисов"
     :param service: Имя сервиса
-    :param serviceip: IP-адрес сервиса
+    :param service_ip: IP-адрес сервиса
     """
 
     import json
 
+    # Полный путь до конф-файла JSON для всех "сервисов"
+    json_conf_filename = working_dir + conf_file_prefix + '.json'
+
     try:
-        json_conf_filename = services_working_dir + services_conf_file_prefix + '.json'
         file = open(json_conf_filename, "w")
     except IOError as e:
         print([u'не удалось открыть файл JSON', json_conf_filename], {e})  # Файл есть, но нет доступа. -> EXIT (52)
         exit(52)
     else:
         with file:
-            data = {service: serviceip}  # создадим запись словаря с ключом `service` и значением `serviceip`
-            with open(services_working_dir + service + ".json",
-                      "w") as write_file:  # Откроем на запиь файл с именем сервиса
-                json.dump(data, write_file)  # Десериализуем (выгрузим в формате JSON) в него переменную `data`
+            data = {service: service_ip}  # создадим запись словаря с ключом `service` и значением `service_ip`
+            with open(working_dir + service + ".json",
+                      "w") as write_file:  # Откроем на запись файл с именем сервиса
+                json.dump(data, write_file)  # Сериализуем (выгрузим в формате JSON) в него переменную `data`
             data2 = checking_services  # Скопируем содержимое `checking_services` в `data2`
-            with open(json_conf_filename, "w") as write_file:  # Откроем на запиь файл для всех "сервисов"
-                json.dump(data2, write_file)  # Десериализуем (выгрузим в формате JSON) в него переменную `data2`
+            with open(json_conf_filename, "w") as write_file:  # Откроем на запись файл для всех "сервисов"
+                json.dump(data2, write_file)  # Сериализуем (выгрузим в формате JSON) в него переменную `data2`
 
 
-def export_to_yaml(services_working_dir: str, services_conf_file_prefix: str, service: str, serviceip):
+def export_to_yaml(working_dir: str, conf_file_prefix: str, service: str, service_ip):
     """
-    Процедура выгрузки (десериализации) словарей в YAML
-    :param services_working_dir: Путь к раабочему каталогу
-    :param services_conf_file_prefix: Префикс имени файла конфига для всех "сервисов"
+    Процедура выгрузки (сериализации) словарей в YAML
+    :param working_dir: Путь к рабочему каталогу
+    :param conf_file_prefix: Префикс имени файла конфига для всех "сервисов"
     :param service: Имя сервиса
-    :param serviceip: IP-адрес сервиса
+    :param service_ip: IP-адрес сервиса
     """
 
     import yaml
 
+    # Полный путь до конф-файла YAML для всех "сервисов"
+    yaml_conf_filename = working_dir + conf_file_prefix + '.yml'
+
     try:
-        yaml_conf_filename = services_working_dir + services_conf_file_prefix + '.yml'  # Полный путь до конфигурационного файла YAML для всех "сервисов"
         file = open(yaml_conf_filename, "w")  # Проверим доступ к файлу попыткой открыть файл на запись.
     except IOError as e:
         print([u'не удалось открыть файл YAML', yaml_conf_filename], {e})  # Файл есть, но нет доступа -> EXIT (52)
@@ -134,21 +140,20 @@ def export_to_yaml(services_working_dir: str, services_conf_file_prefix: str, se
     else:
         with file:
 
-            data = [{service: serviceip}]  # создадим запись словаря с ключом `service` и значением `serviceip`
-            with open(services_working_dir + service + ".yml",
-                      "w") as write_file:  # Откроем на запиь файл с именем сервиса
-                yaml.dump(data, write_file)  # Десериализуем (выгрузим в формате YAML) в него переменную `data`
+            data = [{service: service_ip}]  # создадим запись словаря с ключом `service` и значением `service_ip`
+            with open(working_dir + service + ".yml",
+                      "w") as write_file:  # Откроем на запись файл с именем сервиса
+                yaml.dump(data, write_file)  # Сериализуем (выгрузим в формате YAML) в него переменную `data`
 
-            data2 = (checking_services)  # Скопируем содержимое `checking_services` в `data2`
-            with open(yaml_conf_filename, "w") as write_file:  # Откроем на запиь файл для всех "сервисов"
-                yaml.dump(data2, write_file, explicit_start=True, \
+            data2 = checking_services  # Скопируем содержимое `checking_services` в `data2`
+            with open(yaml_conf_filename, "w") as write_file:  # Откроем на запись файл для всех "сервисов"
+                yaml.dump(data2, write_file,
+                          explicit_start=True,
                           sort_keys=True,
-                          default_flow_style=False)  # Десериализуем (выгрузим в формате YAML) в него переменную `data2`
+                          default_flow_style=False)  # Сериализуем (выгрузим в формате YAML) в него переменную `data2`
 
 
 # Main
-
-from time import sleep
 
 # Выведем заголовок и начальные значения для сервисов:
 print_head(checking_services)
@@ -157,22 +162,22 @@ print_head(checking_services)
 try:
 
     check_services_working_dir(
-        services_working_dir)  # Проверим наличие рабочего каталога. залданного переменной `services_working_dir`
+        services_working_dir)  # Проверим наличие рабочего каталога. заданного переменной `services_working_dir`
 
     while True:
 
-        for host in checking_services:  # Для хаждого host из словаря `checking_services`
+        for host in checking_services:  # Для каждого host из словаря `checking_services`
 
             tested_serv = TestedService(host, checking_services[
                 host])  # Создадим объект `TestedService` с именем и ip из словаря `checking_services`
-            ipchange = tested_serv.changeip()[
-                0]  # Методом tested_serv.changeip() определим, изменился ли IP-адрес и запишем рез-т в "ipchange"
-            newip = tested_serv.changeip()[1]  # Полученный адрес сохраним в "newip"
+            ip_change = tested_serv.change_ip()[
+                0]  # Методом tested_serv.change_ip() определим, изменился ли IP-адрес и запишем рез-т в "ip_change"
+            srv_ip = tested_serv.change_ip()[1]  # Полученный адрес сохраним в "srv_ip"
 
-            # если адрес менялся (ipchange = True)
-            if ipchange:
-                print_error(host, checking_services[host], newip, tz_offset)  # Выведем сообщение в `stdout`
-                checking_services[host] = newip  # Запишем новое значение в словарь `checking_services` по ключу `host`
+            # если адрес менялся (ip_change = True)
+            if ip_change:
+                print_error(host, checking_services[host], srv_ip, tz_offset)  # Выведем сообщение в `stdout`
+                checking_services[host] = srv_ip  # Запишем новое значение в словарь `checking_services` по ключу `host`
                 export_to_json(services_working_dir, services_conf_file_prefix, host,
                                checking_services[host])  # Запишем изменения в JSON-файлы
                 export_to_yaml(services_working_dir, services_conf_file_prefix, host,

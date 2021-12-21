@@ -271,11 +271,11 @@ Start host settings:
 Begin host ip-address testing:
 
 path= /home/vagrant/checking_services
-2021-12-20 20:50:35 [ERROR] drive.google.com IP mistmatch: NoIP 173.194.220.194
-2021-12-20 20:50:35 [ERROR] mail.google.com IP mistmatch: NoIP 74.125.131.19
-2021-12-20 20:50:35 [ERROR] google.com IP mistmatch: NoIP 209.85.233.138
-2021-12-20 20:51:15 [ERROR] mail.google.com IP mistmatch: 74.125.131.19 74.125.131.17
-2021-12-20 20:51:26 [ERROR] mail.google.com IP mistmatch: 74.125.131.17 74.125.131.18
+2021-12-20 20:50:35 [ERROR] drive.google.com IP mismatch: NoIP 173.194.220.194
+2021-12-20 20:50:35 [ERROR] mail.google.com IP mismatch: NoIP 74.125.131.19
+2021-12-20 20:50:35 [ERROR] google.com IP mismatch: NoIP 209.85.233.138
+2021-12-20 20:51:15 [ERROR] mail.google.com IP mismatch: 74.125.131.19 74.125.131.17
+2021-12-20 20:51:26 [ERROR] mail.google.com IP mismatch: 74.125.131.17 74.125.131.18
 ^C Keyboard Interrupt by 'Ctrl-C'
 vagrant@netology1:~$
 
