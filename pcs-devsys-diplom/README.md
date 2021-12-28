@@ -578,7 +578,96 @@ Dec 28 19:38:20 vagrant systemd[1]: Started A high performance web server and a 
 9. Создайте скрипт, который будет генерировать новый сертификат в vault:
   - генерируем новый сертификат так, чтобы не переписывать конфиг nginx;
   - перезапускаем nginx для применения нового сертификата.
+
+```bash
+#!/usr/bin/env bash
+# Renew cert for test.local
+# Prereqs: Hasicorp Vault, NGINX, OpenSSL, JQ
+
+# Vars
+
+VAULT_TOKEN='s.BnJd5fmY8dF3ZSnIYutVsScv'
+cert_file_name='test.local.cert.pem'
+site_ssl_dir='/etc/nginx/ssl/test.local'
+
+# Funcs
+function create_new_cert() {
+  vault write -format=json pki_int/issue/test-dot-local \
+    format=pem_bundle \
+    common_name="test.local" \
+    alt_names="test.local,www.test.local,netology.test.local" \
+    ttl="720h" | jq -r '.data.certificate' >$1
+  echo "Check 1"
+}
+
+#MAIN
+site_cert_full_path="$site_ssl_dir/$cert_file_name"
+
+# Check vault is sealed
+seal_vault=$(vault status)
+if grep -q 'Sealed             true' <<<$seal_vault; then
+  echo 'ERROR: VAULT SEALED' >&2
+  exit 50
+fi
+
+# Login into vault with root creds
+vault login $VAULT_TOKEN &>/dev/null
+if [ $? != 0 ]; then
+  echo "Can\`t login into vault: $?" >&2
+  exit 51
+fi
+
+# Revoke & delete old cert
+cert_sn=$(openssl x509 -noout -serial -in test.local.cert.pem)        # Get SN from current cert
+cert_serial_number=$(sed 's/.*=//g;s/../&:/g;s/:$//' <<<$cert_sn)     # Convert SN to xx:xx view
+vault write pki_int/revoke serial_number="$cert_serial_number"        # Revoke cert w SN
+vault write pki_int/tidy tidy_cert_store=true tidy_revoked_certs=true # Delete revoked certs
+
+# Request new certificates
+create_new_cert $cert_file_name
+
+# Place new cert into site SSL dir
+cp $cert_file_name $site_cert_full_path
+
+# Restart NGINX to commit changes
+systemctl restart nginx
+
+echo 'All done'
+
+exit 0
+EOF
+```
+
 10. Поместите скрипт в crontab, чтобы сертификат обновлялся какого-то числа каждого месяца в удобное для вас время.
+
+```shell
+root@netology:~# crontab -l
+# Edit this file to introduce tasks to be run by cron.
+#
+# Each task to run has to be defined through a single line
+# indicating with different fields when the task will be run
+# and what command to run for the task
+#
+# To define the time you can provide concrete values for
+# minute (m), hour (h), day of month (dom), month (mon),
+# and day of week (dow) or use '*' in these fields (for 'any').
+#
+# Notice that tasks will be started based on the cron's system
+# daemon's notion of time and timezones.
+#
+# Output of the crontab jobs (including errors) is sent through
+# email to the user the crontab file belongs to (unless redirected).
+#
+# For example, you can run a backup of all your user accounts
+# at 5 a.m every week with:
+# 0 5 * * 1 tar -zcf /var/backups/home.tgz /home/
+#
+# For more information see the manual pages of crontab(5) and cron(8)
+#
+# m h  dom mon dow   command
+*/15 *  *   *   *    /usr/bin/bash /root/cert_renew.sh &>/dev/null
+
+```
 
 ## Результат
 
