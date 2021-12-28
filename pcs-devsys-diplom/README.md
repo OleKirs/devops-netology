@@ -672,13 +672,12 @@ root@netology:~# crontab -l
 ```shell
 root@netology:~# journalctl -f
 -- Logs begin at Tue 2021-12-28 11:12:42 UTC. --
-Dec 28 21:35:14 netology.test.local crontab[1715]: (root) END EDIT (root)
-Dec 28 21:35:21 netology.test.local systemd[1]: Stopping A high performance web server and a reverse proxy server...
-Dec 28 21:35:21 netology.test.local systemd[1]: nginx.service: Succeeded.
-Dec 28 21:35:21 netology.test.local systemd[1]: Stopped A high performance web server and a reverse proxy server.
-Dec 28 21:35:21 netology.test.local systemd[1]: Starting A high performance web server and a reverse proxy server...
-Dec 28 21:35:21 netology.test.local systemd[1]: Started A high performance web server and a reverse proxy server.
 ...
+Dec 28 21:35:14 netology.test.local crontab[1715]: (root) END EDIT (root)
+Dec 28 21:35:32 netology.test.local crontab[1806]: (root) BEGIN EDIT (root)
+Dec 28 21:35:51 netology.test.local crontab[1806]: (root) REPLACE (root)
+Dec 28 21:35:51 netology.test.local crontab[1806]: (root) END EDIT (root)
+Dec 28 21:35:53 netology.test.local crontab[1811]: (root) LIST (root)
 Dec 28 21:45:01 netology.test.local CRON[1817]: pam_unix(cron:session): session opened for user root by (uid=0)
 Dec 28 21:45:01 netology.test.local CRON[1818]: (root) CMD (/usr/bin/bash /root/cert_renew.sh &>/dev/null)
 Dec 28 21:45:01 netology.test.local CRON[1817]: pam_unix(cron:session): session closed for user root
@@ -687,7 +686,14 @@ Dec 28 21:45:03 netology.test.local systemd[1]: nginx.service: Succeeded.
 Dec 28 21:45:03 netology.test.local systemd[1]: Stopped A high performance web server and a reverse proxy server.
 Dec 28 21:45:03 netology.test.local systemd[1]: Starting A high performance web server and a reverse proxy server...
 Dec 28 21:45:03 netology.test.local systemd[1]: Started A high performance web server and a reverse proxy server.
-
+Dec 28 22:00:01 netology.test.local CRON[1887]: pam_unix(cron:session): session opened for user root by (uid=0)
+Dec 28 22:00:01 netology.test.local CRON[1888]: (root) CMD (/usr/bin/bash /root/cert_renew.sh &>/dev/null)
+Dec 28 22:00:01 netology.test.local CRON[1887]: pam_unix(cron:session): session closed for user root
+Dec 28 22:00:03 netology.test.local systemd[1]: Stopping A high performance web server and a reverse proxy server...
+Dec 28 22:00:03 netology.test.local systemd[1]: nginx.service: Succeeded.
+Dec 28 22:00:03 netology.test.local systemd[1]: Stopped A high performance web server and a reverse proxy server.
+Dec 28 22:00:03 netology.test.local systemd[1]: Starting A high performance web server and a reverse proxy server...
+Dec 28 22:00:03 netology.test.local systemd[1]: Started A high performance web server and a reverse proxy server.
 ```
 Скриншот окна браузера открытого на хосте (до обновления сертификата)
 
