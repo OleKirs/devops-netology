@@ -669,6 +669,8 @@ root@netology:~# crontab -l
 
 ```
 Результаты работы:
+
+По записям в журнале событий видны запуски задания в 21:45:01 и в 22:00:01
 ```shell
 root@netology:~# journalctl -f
 -- Logs begin at Tue 2021-12-28 11:12:42 UTC. --
