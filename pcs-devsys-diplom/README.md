@@ -668,6 +668,34 @@ root@netology:~# crontab -l
 */15 *  *   *   *    /usr/bin/bash /root/cert_renew.sh &>/dev/null
 
 ```
+Результаты работы:
+```shell
+root@netology:~# journalctl -f
+-- Logs begin at Tue 2021-12-28 11:12:42 UTC. --
+Dec 28 21:35:14 netology.test.local crontab[1715]: (root) END EDIT (root)
+Dec 28 21:35:21 netology.test.local systemd[1]: Stopping A high performance web server and a reverse proxy server...
+Dec 28 21:35:21 netology.test.local systemd[1]: nginx.service: Succeeded.
+Dec 28 21:35:21 netology.test.local systemd[1]: Stopped A high performance web server and a reverse proxy server.
+Dec 28 21:35:21 netology.test.local systemd[1]: Starting A high performance web server and a reverse proxy server...
+Dec 28 21:35:21 netology.test.local systemd[1]: Started A high performance web server and a reverse proxy server.
+...
+Dec 28 21:45:01 netology.test.local CRON[1817]: pam_unix(cron:session): session opened for user root by (uid=0)
+Dec 28 21:45:01 netology.test.local CRON[1818]: (root) CMD (/usr/bin/bash /root/cert_renew.sh &>/dev/null)
+Dec 28 21:45:01 netology.test.local CRON[1817]: pam_unix(cron:session): session closed for user root
+Dec 28 21:45:03 netology.test.local systemd[1]: Stopping A high performance web server and a reverse proxy server...
+Dec 28 21:45:03 netology.test.local systemd[1]: nginx.service: Succeeded.
+Dec 28 21:45:03 netology.test.local systemd[1]: Stopped A high performance web server and a reverse proxy server.
+Dec 28 21:45:03 netology.test.local systemd[1]: Starting A high performance web server and a reverse proxy server...
+Dec 28 21:45:03 netology.test.local systemd[1]: Started A high performance web server and a reverse proxy server.
+
+```
+Скриншот окна браузера открытого на хосте (до обновления сертификата)
+
+![Страница NGINX до обновления сертификата](./pic2.png "Страница NGINX до обновления сертификата")
+
+Скриншот окна браузера открытого на хосте (после обновления сертификата) - Видно изменившееся время действия и отпечаток сертификата
+
+![Страница NGINX после обновления сертификата](./pic3.png "Страница NGINX после обновления сертификата")
 
 ## Результат
 
