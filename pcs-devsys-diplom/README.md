@@ -1,14 +1,17 @@
 # Курсовая работа по итогам модуля "DevOps и системное администрирование"
 
-Курсовая работа необходима для проверки практических навыков, полученных в ходе прохождения курса "DevOps и системное администрирование".
+Курсовая работа необходима для проверки практических навыков, полученных в ходе прохождения курса "DevOps и системное
+администрирование".
 
-Мы создадим и настроим виртуальное рабочее место. Позже вы сможете использовать эту систему для выполнения домашних заданий по курсу
+Мы создадим и настроим виртуальное рабочее место. Позже вы сможете использовать эту систему для выполнения домашних
+заданий по курсу
 
 ## Задание
 
 1. Создайте виртуальную машину Linux.
 
-Создадим в каталоге, где планируется размещение тестовой виртуальной машины файл `Vagrantfile` с базовой конфигурацией для гипервизора Oracle VirtualBox: 
+Создадим в каталоге, где планируется размещение тестовой виртуальной машины файл `Vagrantfile` с базовой конфигурацией
+для гипервизора Oracle VirtualBox:
 Базовый образ - Ubuntu-20.04
 
 ```ruby
@@ -37,8 +40,7 @@ Vagrant.configure("2") do |config|
       vb.cpus = "4"
       vb.gui = false
     end
-    node.vm.hostname = "netology1.test.local"
-    #node.vm.network "private_network", ip: "172.16.10.100"
+    node.vm.hostname = "netology.test.local"
     node.vm.network :forwarded_port, guest: 80, host: 8080
     node.vm.network :forwarded_port, guest: 443, host: 8443
     node.vm.network :forwarded_port, guest: 8200, host: 8200
@@ -52,7 +54,7 @@ end
 
 ```
 
-Запустим в текущем каталоге настройку ВМ из PowerShell командой `vagrant up`:
+Запустим командой `vagrant up` создание и настройку ВМ в текущем каталоге:
 
 ```PowerShell
 PS D:\VBox\VMs\DevOps2021\pcs-devsys-diplom\ub20> vagrant up
@@ -103,6 +105,7 @@ Bringing machine 'netology' up with 'virtualbox' provider...
     netology: Fetched 4,357 kB in 46s (94.8 kB/s)
     netology: Reading package lists...
 ```
+
 Проверим состояние ВМ:
 
 ```powershell
@@ -116,7 +119,9 @@ shut it down forcefully, or you can run `vagrant suspend` to simply
 suspend the virtual machine. In either case, to restart it again,
 simply run `vagrant up`.
 ```
-Командой `ssh-copy-id` скопируем на новую ВМ ранее созданный публичный ключ SSH  и подключимся к ВМ по протоколу SSH под учётной записью суперпользователя (`root`).
+
+Командой `ssh-copy-id` скопируем на новую ВМ ранее созданный публичный ключ SSH и подключимся к ВМ по протоколу SSH под
+учётной записью суперпользователя (`root`).
 
 ```shell
 $ ssh-copy-id -p 2222 vagrant@127.0.0.1
@@ -132,12 +137,13 @@ Welcome to Ubuntu 20.04.3 LTS (GNU/Linux 5.4.0-91-generic x86_64)
 root@netology:~#
 ```
 
-2. Установите ufw и разрешите к этой машине сессии на порты 22 и 443, при этом трафик на интерфейсе localhost (lo) должен ходить свободно на все порты.
+2. Установите ufw и разрешите к этой машине сессии на порты 22 и 443, при этом трафик на интерфейсе localhost (lo)
+   должен ходить свободно на все порты.
 
-Создадим скрипт в каталоге `/root`
+Создадим скрипт `ufw_setup.sh`` в каталоге `/root`
 
 ```bash
-root@vagrant:~# cat > /root/ufw_setup
+root@netology:~# cat > /root/ufw_setup.sh
 #!/usr/bin/env bash
 
 function ufw_install() {
@@ -190,11 +196,11 @@ EOF
 Дадим права на запуск, выполним скрипт и проверим состояние UFW:
 
 ```bash
-root@vagrant:~# chmod 700 /root/ufw_setup
-root@vagrant:~# bash /root/ufw_setup
+root@netology:~# chmod 700 /root/ufw_setup.sh
+root@netology:~# /usr/bin/bash /root/ufw_setup.sh
 Start UFW installation.
 UFW installation \& configuration completed successfully
-root@vagrant:~# ufw status
+root@netology:~# ufw status
 Status: active
 
 To                         Action      From
@@ -206,15 +212,17 @@ Anywhere                   ALLOW       127.0.0.1
 8200/tcp (v6)              ALLOW       Anywhere (v6)
 ```
 
-3. Установите hashicorp vault ([инструкция по ссылке](https://learn.hashicorp.com/tutorials/vault/getting-started-install?in=vault/getting-started#install-vault)).
+3. Установите hashicorp
+   vault ([инструкция по ссылке](https://learn.hashicorp.com/tutorials/vault/getting-started-install?in=vault/getting-started#install-vault))
+   .
 
-Установим Hashicorp Vault по инструкции для deb-like дистрибутивов:
+Установим Hashicorp Vault по инструкции для "debian-like" дистрибутивов:
 
 ```shell
-root@vagrant:~# curl -fs https://apt.releases.hashicorp.com/gpg | apt-key add -
+root@netology:~# curl -fs https://apt.releases.hashicorp.com/gpg | apt-key add -
 OK
 
-root@vagrant:~# sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+root@netology:~# sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
 Get:1 https://apt.releases.hashicorp.com focal InRelease [9,495 B]
 Hit:2 http://us.archive.ubuntu.com/ubuntu focal InRelease
 Hit:3 http://us.archive.ubuntu.com/ubuntu focal-updates InRelease
@@ -224,7 +232,7 @@ Hit:6 http://us.archive.ubuntu.com/ubuntu focal-security InRelease
 Fetched 50.6 kB in 2s (22.9 kB/s)
 Reading package lists... Done
 
-root@vagrant:~# apt-get install vault
+root@netology:~# apt-get install vault
 Reading package lists... Done
 Building dependency tree
 Reading state information... Done
@@ -249,12 +257,12 @@ writing new private key to 'tls.key'
 Vault TLS key and self-signed certificate have been generated in '/opt/vault/tls'.
 ```
 
-Настроим переменные и службы:
+Добавим переменные окружения, настроим службу `vault` на автозапуск, и запустим её:
 
 ```shell
-root@vagrant:~# export VAULT_ADDR=http://127.0.0.1:8200
-root@vagrant:~# echo 'VAULT_ADDR=http://127.0.0.1:8200' >> /etc/environment
-root@vagrant:~# cat /etc/vault.d/vault.hcl
+root@netology:~# export VAULT_ADDR=http://127.0.0.1:8200
+root@netology:~# echo 'VAULT_ADDR=http://127.0.0.1:8200' >> /etc/environment
+root@netology:~# cat /etc/vault.d/vault.hcl
 ...
 ui = true
 storage "file" {
@@ -266,14 +274,15 @@ listener "tcp" {
   tls_disable = 1
 }
 ...
-root@vagrant:~#
-root@vagrant:~# systemctl enable vault --now
+root@netology:~#
+root@netology:~# systemctl enable vault --now
 Created symlink /etc/systemd/system/multi-user.target.wants/vault.service → /lib/systemd/system/vault.service.
 ```
 
-Проверим состояние `vault` и инициализируем сервер с настройками по-умолчанию
+Проверим состояние `vault` :
+
 ```shell
-root@vagrant:~# vault status
+root@netology:~# vault status
 Key                Value
 ---                -----
 Seal Type          shamir
@@ -287,18 +296,24 @@ Version            1.9.2
 Storage Type       file
 HA Enabled         false
 ```
+
+Инициализируем сервис с настройками по-умолчанию:
+
 ```shell
-root@vagrant:~# vault operator init
+root@netology:~# vault operator init
 Unseal Key 1: au...ff
+Unseal Key 2: xe..ad
 ...
 Unseal Key 5: zv..1Y
 
 Initial Root Token: s.Bn..cv
 ...
 ```
+
 Разблокируем сервер с использованием любых трёх полученных `Unseal Key` и подключимся с токеном `Initial Root Token`:
+
 ```shell
-root@vagrant:~# vault operator unseal au..ff
+root@netology:~# vault operator unseal au..ff
 Key                Value
 ---                -----
 Seal Type          shamir
@@ -311,7 +326,7 @@ Unseal Nonce       a2f410bb-0a7f-23f8-ae2a-0f9898eb8ae4
 Version            1.9.2
 Storage Type       file
 HA Enabled         false
-root@vagrant:~# vault operator unseal xe..ad
+root@netology:~# vault operator unseal xe..ad
 Key                Value
 ---                -----
 Seal Type          shamir
@@ -324,7 +339,7 @@ Unseal Nonce       a2f410bb-0a7f-23f8-ae2a-0f9898eb8ae4
 Version            1.9.2
 Storage Type       file
 HA Enabled         false
-root@vagrant:~# vault operator unseal xA..2Q
+root@netology:~# vault operator unseal xA..2Q
 Key             Value
 ---             -----
 Seal Type       shamir
@@ -337,8 +352,8 @@ Storage Type    file
 Cluster Name    vault-cluster-5d48425d
 Cluster ID      a300d821-cba1-f711-7ee9-43c24a9ac819
 HA Enabled      false
-root@vagrant:~#
-root@vagrant:~# vault login
+root@netology:~#
+root@netology:~# vault login
 Token (will be hidden):
 Success! You are now authenticated. The token information displayed below
 is already stored in the token helper. You do NOT need to run "vault login"
@@ -353,13 +368,17 @@ token_renewable      false
 token_policies       ["root"]
 identity_policies    []
 policies             ["root"]
-root@vagrant:~#
+root@netology:~#
 ```
-4. Cоздайте центр сертификации по инструкции ([ссылка](https://learn.hashicorp.com/tutorials/vault/pki-engine?in=vault/secrets-management)) и выпустите сертификат для использования его в настройке веб-сервера nginx (срок жизни сертификата - месяц).
+
+4. Cоздайте центр сертификации по
+   инструкции ([ссылка](https://learn.hashicorp.com/tutorials/vault/pki-engine?in=vault/secrets-management)) и выпустите
+   сертификат для использования его в настройке веб-сервера nginx (срок жизни сертификата - месяц).
 
 Установим утилиту `jq`
+
 ```shell
-root@vagrant:~# apt-get install -y jq
+root@netology:~# apt-get install -y jq
 Reading package lists...
 Building dependency tree...
 Reading state information...
@@ -378,79 +397,93 @@ Setting up jq (1.6-1ubuntu0.20.04.1) ...
 Processing triggers for man-db (2.9.1-1) ...
 ```
 
-Пропишем в `/etc/hosts` адрес `test.local` как `127.0.0.1` и переопределим переменную `VAULT_ADDR` в текущем сеансе и в файле `/etc/environment`:
+Пропишем в `/etc/hosts` адрес `test.local` как `127.0.0.1` (не показано в коде) и переопределим переменную `VAULT_ADDR`
+в текущем сеансе и в файле `/etc/environment`:
+
 ```shell
-root@vagrant:~# export VAULT_ADDR=http://test.local:8200
+root@netology:~# export VAULT_ADDR=http://test.local:8200
 ...
-root@vagrant:~# cat /etc/environment
+root@netology:~# cat /etc/environment
 PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
 VAULT_ADDR=http://test.local:8200
 ```
-Зададим переменную `VAULT_TOKEN`:
+
+Зададим переменной `VAULT_TOKEN` значение ранее полученного ключа `Root Token` :
+
 ```shell
-root@vagrant:~# export VAULT_TOKEN='s.Bn..cv'
+root@netology:~# export VAULT_TOKEN='s.Bn..cv'
 ```
 
-Сконфигурируем `secret` для корневого CA
+Сконфигурируем `secrets` для корневого Certificate Authority (Root CA):
+
 ```shell
-root@vagrant:~# vault secrets enable pki
+root@netology:~# vault secrets enable pki
 Success! Enabled the pki secrets engine at: pki/
-root@vagrant:~# vault secrets tune -max-lease-ttl=87600h pki
+root@netology:~# vault secrets tune -max-lease-ttl=87600h pki
 Success! Tuned the secrets engine at: pki/
 ```
+
 Выпустим сертификат `Test Root CA` и сохраним его в файле `/root/CA_cert.crt`
+
 ```shell
-root@vagrant:~# vault write -field=certificate pki/root/generate/internal \
+root@netology:~# vault write -field=certificate pki/root/generate/internal \
 >      common_name="Test Root CA" \
 >      ttl=87600h > CA_cert.crt
-root@vagrant:~# 
+root@netology:~# 
 ```
+
 Сконфигурируем места хранения выпущенных сертификатов и списков отзывов:
+
 ```shell
-root@vagrant:~# vault write pki/config/urls \
+root@netology:~# vault write pki/config/urls \
 >      issuing_certificates="$VAULT_ADDR/v1/pki/ca" \
 >      crl_distribution_points="$VAULT_ADDR/v1/pki/crl"
 Success! Data written to: pki/config/urls
 ```
 
-Аналогично сконфигурируем выпускающий CA:
+Аналогично сконфигурируем промежуточный (выпускающий) CA:
+
 ```shell
-root@vagrant:~# vault secrets enable -path=pki_int pki
+root@netology:~# vault secrets enable -path=pki_int pki
 Success! Enabled the pki secrets engine at: pki_int/
-root@vagrant:~# vault secrets tune -max-lease-ttl=43800h pki_int
+root@netology:~# vault secrets tune -max-lease-ttl=43800h pki_int
 Success! Tuned the secrets engine at: pki_int/
-root@vagrant:~# vault write -format=json pki_int/intermediate/generate/internal \
+root@netology:~# vault write -format=json pki_int/intermediate/generate/internal \
 >      common_name="Test Intermediate Authority" \
 >      | jq -r '.data.csr' > pki_intermediate.csr
-root@vagrant:~# vault write -format=json pki/root/sign-intermediate csr=@pki_intermediate.csr \
+root@netology:~# vault write -format=json pki/root/sign-intermediate csr=@pki_intermediate.csr \
 >      format=pem_bundle ttl="43800h" \
 >      | jq -r '.data.certificate' > intermediate.cert.pem
-root@vagrant:~#
-root@vagrant:~# vault write pki_int/intermediate/set-signed certificate=@intermediate.cert.pem
+root@netology:~#
+root@netology:~# vault write pki_int/intermediate/set-signed certificate=@intermediate.cert.pem
 Success! Data written to: pki_int/intermediate/set-signed
 ```
 
-И выпустим сертификат (bundle в формате .pem) для `CN=test.local` и SAN `DNS=www.test.local`
+И выпустим сертификат (bundle в формате "pem") для `CN=test.local` и SAN `DNS=www.test.local`
+
 ```shell
-root@vagrant:~# vault write pki_int/roles/test-dot-local \
+root@netology:~# vault write pki_int/roles/test-dot-local \
 >      allowed_domains="test.local" \
 >  allowed_other_sans='*' \
 >      allow_subdomains=true \
 >  allow_bare_domains=true \
 >      max_ttl="720h"
 Success! Data written to: pki_int/roles/test-dot-local
-root@vagrant:~# vault write -format=json pki_int/issue/test-dot-local \
+root@netology:~# vault write -format=json pki_int/issue/test-dot-local \
 >   format=pem_bundle \
 >   common_name="test.local" \
 >   alt_names="test.local,www.test.local,netology1.test.local" \
 >   ttl="720h" | jq -r '.data.certificate' > test.local.cert.pem
-root@vagrant:~# 
+root@netology:~# 
 ```
-5. Установите корневой сертификат созданного центра сертификации в доверенные в хостовой системе.
- Для добавления своего корневого CA в доверенные скопируем его в  `/usr/local/share/ca-certificates/test_local.crt` и запустим утилиту `update-ca-certificates`
+
+5. Установите корневой сертификат созданного центра сертификации в доверенные в хостовой системе. Для добавления своего
+   корневого CA в доверенные скопируем его в  `/usr/local/share/ca-certificates/test_local.crt` и запустим
+   утилиту `update-ca-certificates`
+
 ```shell
-root@vagrant:~# cp /root/CA_cert.crt /usr/local/share/ca-certificates/test_local.crt
-root@vagrant:~# update-ca-certificates
+root@netology:~# cp /root/CA_cert.crt /usr/local/share/ca-certificates/test_local.crt
+root@netology:~# update-ca-certificates
 Updating certificates in /etc/ssl/certs...
 1 added, 0 removed; done.
 Running hooks in /etc/ca-certificates/update.d...
@@ -458,8 +491,9 @@ done.
 ```
 
 6. Установите nginx.
+
 ```shell
-root@vagrant:~# apt-get install -y nginx
+root@netology:~# apt-get install -y nginx
 Reading package lists... Done
 Building dependency tree
 Reading state information... Done
@@ -474,31 +508,38 @@ The following NEW packages will be installed:
 0 upgraded, 22 newly installed, 0 to remove and 0 not upgraded.
 ...
 ```
-Проверим версию установленного ПО:
+
+Для проверки получим версию установленного Nginx:
+
 ```shell
-root@vagrant:~# nginx -v
+root@netology:~# nginx -v
 nginx version: nginx/1.18.0 (Ubuntu)
 ```
 
-7. По инструкции ([ссылка](https://nginx.org/en/docs/http/configuring_https_servers.html)) настройте nginx на https, используя ранее подготовленный сертификат:
-  - можно использовать стандартную стартовую страницу nginx для демонстрации работы сервера;
-  - можно использовать и другой html файл, сделанный вами;
+7. По инструкции ([ссылка](https://nginx.org/en/docs/http/configuring_https_servers.html)) настройте nginx на https,
+   используя ранее подготовленный сертификат:
+
+- можно использовать стандартную стартовую страницу nginx для демонстрации работы сервера;
+- можно использовать и другой html файл, сделанный вами;
 
 Создадим каталог `/etc/nginx/ssl/test.local/` и скопируем в него bundle `test.local.cert.pem`
+
 ```shell
-root@vagrant:~# mkdir /etc/nginx/ssl/
-root@vagrant:~# mkdir /etc/nginx/ssl/test.local/
-root@vagrant:~# cp test.local.cert.pem /etc/nginx/ssl/test.local/
+root@netology:~# mkdir /etc/nginx/ssl/
+root@netology:~# mkdir /etc/nginx/ssl/test.local/
+root@netology:~# cp test.local.cert.pem /etc/nginx/ssl/test.local/
 ```
 
 Создадим каталог `/var/www/test.local/public_html/` и скопируем в него дефолтную web-страницу NGINX
+
 ```shell
-root@vagrant:~# mkdir /var/www/test.local
-root@vagrant:~# mkdir /var/www/test.local/public_html/
-root@vagrant:~# cp /var/www/html/index.nginx-debian.html /var/www/test.local/public_html/index.html
+root@netology:~# mkdir /var/www/test.local
+root@netology:~# mkdir /var/www/test.local/public_html/
+root@netology:~# cp /var/www/html/index.nginx-debian.html /var/www/test.local/public_html/index.html
 ```
 
 Создадим файл конфигурации для тестового сайта:
+
 ```shell
 root@netology:~# cat /etc/nginx/sites-available/test_dot_local
 server {
@@ -518,13 +559,17 @@ server {
         }
 }
 ```
+
 Сделаем софт-линк на созданный конфиг в каталоге `/etc/nginx/sites-enabled`
+
 ```shell
-root@vagrant:~# ln -s /etc/nginx/sites-available/test_dot_local /etc/nginx/sites-enabled/
-root@vagrant:~# ls /etc/nginx/sites-enabled/
+root@netology:~# ln -s /etc/nginx/sites-available/test_dot_local /etc/nginx/sites-enabled/
+root@netology:~# ls /etc/nginx/sites-enabled/
 default  test_dot_local
 ```
+
 Поменяем настройки SSL в файле `/etc/nginx/nginx.conf` :
+
 ```shell
 http {
 ...
@@ -541,16 +586,18 @@ http {
 ```
 
 И проверим корректность синтаксиса:
+
 ```shell
-root@vagrant:~# nginx -t
+root@netology:~# nginx -t
 nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
 nginx: configuration file /etc/nginx/nginx.conf test is successful
 ```
 
 Перезапустим NGINX:
+
 ```shell
-root@vagrant:~# systemctl restart nginx
-root@vagrant:~# systemctl status nginx
+root@netology:~# systemctl restart nginx
+root@netology:~# systemctl status nginx
 ● nginx.service - A high performance web server and a reverse proxy server
      Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
      Active: active (running) since Tue 2021-12-28 19:38:20 UTC; 6s ago
@@ -567,8 +614,8 @@ root@vagrant:~# systemctl status nginx
              ├─24125 nginx: worker process
              └─24126 nginx: worker process
 
-Dec 28 19:38:20 vagrant systemd[1]: Starting A high performance web server and a reverse proxy server...
-Dec 28 19:38:20 vagrant systemd[1]: Started A high performance web server and a reverse proxy server.
+Dec 28 19:38:20 netology systemd[1]: Starting A high performance web server and a reverse proxy server...
+Dec 28 19:38:20 netology systemd[1]: Started A high performance web server and a reverse proxy server.
 ```
 
 8. Откройте в браузере на хосте https адрес страницы, которую обслуживает сервер nginx.
@@ -576,8 +623,9 @@ Dec 28 19:38:20 vagrant systemd[1]: Started A high performance web server and a 
 ![Страница NGINX с созданным сертификатом](./pic1.png "Страница NGINX с созданным сертификатом")
 
 9. Создайте скрипт, который будет генерировать новый сертификат в vault:
-  - генерируем новый сертификат так, чтобы не переписывать конфиг nginx;
-  - перезапускаем nginx для применения нового сертификата.
+
+- генерируем новый сертификат так, чтобы не переписывать конфиг nginx;
+- перезапускаем nginx для применения нового сертификата.
 
 ```bash
 #!/usr/bin/env bash
@@ -668,9 +716,11 @@ root@netology:~# crontab -l
 */15 *  *   *   *    /usr/bin/bash /root/cert_renew.sh &>/dev/null
 
 ```
+
 Результаты работы:
 
 По записям в журнале событий видны запуски задания в 21:45:01 и в 22:00:01
+
 ```shell
 root@netology:~# journalctl -f
 -- Logs begin at Tue 2021-12-28 11:12:42 UTC. --
@@ -697,11 +747,13 @@ Dec 28 22:00:03 netology.test.local systemd[1]: Stopped A high performance web s
 Dec 28 22:00:03 netology.test.local systemd[1]: Starting A high performance web server and a reverse proxy server...
 Dec 28 22:00:03 netology.test.local systemd[1]: Started A high performance web server and a reverse proxy server.
 ```
+
 Скриншот окна браузера открытого на хосте (до обновления сертификата)
 
 ![Страница NGINX до обновления сертификата](./pic2.png "Страница NGINX до обновления сертификата")
 
-Скриншот окна браузера открытого на хосте (после обновления сертификата) - Видно изменившееся время действия и отпечаток сертификата
+Скриншот окна браузера открытого на хосте (после обновления сертификата) - Видно изменившееся время действия и отпечаток
+сертификата
 
 ![Страница NGINX после обновления сертификата](./pic3.png "Страница NGINX после обновления сертификата")
 
@@ -712,16 +764,20 @@ Dec 28 22:00:03 netology.test.local systemd[1]: Started A high performance web s
 - Процесс установки и настройки ufw
 - Процесс установки и выпуска сертификата с помощью hashicorp vault
 - Процесс установки и настройки сервера nginx
-- Страница сервера nginx в браузере хоста не содержит предупреждений 
+- Страница сервера nginx в браузере хоста не содержит предупреждений
 - Скрипт генерации нового сертификата работает (сертификат сервера ngnix должен быть "зеленым")
 - Crontab работает (выберите число и время так, чтобы показать что crontab запускается и делает что надо)
 
 ## Как сдавать курсовую работу
 
-Курсовую работу выполните в файле readme.md в github репозитории. В личном кабинете отправьте на проверку ссылку на .md-файл в вашем репозитории.
+Курсовую работу выполните в файле readme.md в github репозитории. В личном кабинете отправьте на проверку ссылку на
+.md-файл в вашем репозитории.
 
-Также вы можете выполнить задание в [Google Docs](https://docs.google.com/document/u/0/?tgif=d) и отправить в личном кабинете на проверку ссылку на ваш документ.
-Если необходимо прикрепить дополнительные ссылки, просто добавьте их в свой Google Docs.
+Также вы можете выполнить задание в [Google Docs](https://docs.google.com/document/u/0/?tgif=d) и отправить в личном
+кабинете на проверку ссылку на ваш документ. Если необходимо прикрепить дополнительные ссылки, просто добавьте их в свой
+Google Docs.
 
-Перед тем как выслать ссылку, убедитесь, что ее содержимое не является приватным (открыто на комментирование всем, у кого есть ссылка), иначе преподаватель не сможет проверить работу. 
-Ссылка на инструкцию [Как предоставить доступ к файлам и папкам на Google Диске](https://support.google.com/docs/answer/2494822?hl=ru&co=GENIE.Platform%3DDesktop).
+Перед тем как выслать ссылку, убедитесь, что ее содержимое не является приватным (открыто на комментирование всем, у
+кого есть ссылка), иначе преподаватель не сможет проверить работу. Ссылка на
+инструкцию [Как предоставить доступ к файлам и папкам на Google Диске](https://support.google.com/docs/answer/2494822?hl=ru&co=GENIE.Platform%3DDesktop)
+.
