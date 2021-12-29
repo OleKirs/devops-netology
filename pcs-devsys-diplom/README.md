@@ -620,6 +620,9 @@ Dec 28 19:38:20 netology systemd[1]: Started A high performance web server and a
 
 8. Откройте в браузере на хосте https адрес страницы, которую обслуживает сервер nginx.
 
+Добавим самоподписанный корневой сертификат `Test Root CA` в доверенные корневые сертификаты на хостовой ОС и в браузере.
+Перейдём в браузере по адресу `https://www.test.local:8443` (порт указан с учётом настройки проброса портов в VirtualBox (см. п."1" задания - "Создайте виртуальную машину Linux."))
+Проверим, что сертификат валидный и соединение безопасно (предупреждение Firefox "Mozilla does not recognize..." связано с тем, что сертификат добавлен вручную):
 ![Страница NGINX с созданным сертификатом](./pic1.png "Страница NGINX с созданным сертификатом")
 
 9. Создайте скрипт, который будет генерировать новый сертификат в vault:
@@ -627,14 +630,17 @@ Dec 28 19:38:20 netology systemd[1]: Started A high performance web server and a
 - генерируем новый сертификат так, чтобы не переписывать конфиг nginx;
 - перезапускаем nginx для применения нового сертификата.
 
+Создадим скрипт `/root/cert_renew.sh``:
+
 ```bash
+root@netology:~# cat > /root/cert_renew.sh
 #!/usr/bin/env bash
 # Renew cert for test.local
 # Prereqs: Hasicorp Vault, NGINX, OpenSSL, JQ
 
 # Vars
 
-VAULT_TOKEN='s.BnJd5fmY8dF3ZSnIYutVsScv'
+VAULT_TOKEN='s.Bn..cv'
 cert_file_name='test.local.cert.pem'
 site_ssl_dir='/etc/nginx/ssl/test.local'
 
@@ -685,9 +691,14 @@ echo 'All done'
 exit 0
 EOF
 ```
+И сделаем файл исполняемым для `root`:
+```shell
+root@netology:~# chmod 700 /root/cert_renew.sh
+```
 
 10. Поместите скрипт в crontab, чтобы сертификат обновлялся какого-то числа каждого месяца в удобное для вас время.
 
+Создадим задание в crontab для root, выполняемое каждые 15 минут:
 ```shell
 root@netology:~# crontab -l
 # Edit this file to introduce tasks to be run by cron.
